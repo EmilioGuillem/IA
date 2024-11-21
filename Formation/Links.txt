@@ -45,4 +45,4 @@ spech recognition :
 chromaDB guarda en forma de vector (https://docs.trychroma.com/)
 
 
-(pour gérer mes environnements python : https://python-poetry.org/ )
+(pour gérer mes environnements python : https://python-poetry.org/)
