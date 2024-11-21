@@ -1,0 +1,48 @@
+https://www.tensorflow.org/tutorials?hl=fr
+https://playground.tensorflow.org/
+
+utilizar modelo existente : https://www.tensorflow.org/guide/keras/transfer_learning?hl=fr
+
+https://keras.io/api/
+
+https://scikit-learn.org/stable/auto_examples/tree/plot_unveil_tree_structure.html#sphx-glr-auto-examples-tree-plot-unveil-tree-structure-py
+
+datasets : https://www.kaggle.com/datasets/kritikseth/fruit-and-vegetable-image-recognition?select=train
+
+
+
+Pour afficher une image du dataset 
+ 
+for images, labels in dataset.take(1):
+    # Sélectionner la première image du lot
+    img = images[0].numpy().astype("uint8")
+    label = labels[0].numpy()
+ 
+    # Afficher l'image
+    plt.imshow(img)
+    plt.title(f"Label: {label}")
+    plt.axis('off')
+    plt.show()
+
+
+aprendizaje reforzado = https://pypi.org/project/pyqlearning/
+
+aprendizaje multitarea = para predecir varias tareas al mismo tiempo
+
+boosting (mejorar el resultado de predicción) = https://xgboost.readthedocs.io/en/stable/
+
+Stacking (uso de diferentes modelos, se usea sobre todo para análisis de textos, mails.... en cambio, tienen problemas de mantenimiento) :  
+
+
+
+https://towardsdatascience.com/explainable-ai-xai-lime-shap-two-great-candidates-to-help-you-explain-your-machine-learning-a95536a46c4e
+
+
+spech recognition : 
+	https://ollama.com/
+	https://docs.getleon.ai/
+
+chromaDB guarda en forma de vector (https://docs.trychroma.com/)
+
+
+(pour gérer mes environnements python : https://python-poetry.org/ )

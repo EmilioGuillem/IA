@@ -1,0 +1,45 @@
+import matplotlib.pyplot as plt
+import pandas as pd
+import numpy as np
+from sklearn.datasets import load_breast_cancer
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+
+data = load_breast_cancer()
+
+# print(data.data)
+# print(data.feature_names)
+# print(data.DESCR)
+print(data.target)
+
+x_train, x_test, Y_train, Y_test = train_test_split(data.data, data.target, test_size = 0.25, random_state=1, stratify=data.target)
+
+
+model = LogisticRegression()
+x = x_train[:,0:30]
+y = Y_train
+model.fit(x, y)
+
+print(model.intercept_)
+print(model.coef_)
+
+# predict = model.predict(x_test)
+# print('R-Squared Linear: %.4f' % model.score(x_test, Y_test))
+
+#---get the predicted probablities and convert into a dataframe---
+preds_prob = pd.DataFrame(model.predict_proba(X=x_test))
+#---assign column names to prediction---
+preds_prob.columns = ["Malignant", "Benign"]
+#---get the predicted class labels---
+preds = model.predict(X=x_test)
+preds_class = pd.DataFrame(preds)
+preds_class.columns = ["Prediction"]
+#---actual diagnosis---
+original_result = pd.DataFrame(Y_test)
+original_result.columns = ["Original Result"]
+#---merge the three dataframes into one---
+result = pd.concat([preds_prob, preds_class, original_result], axis=1)
+print(result.head())
+
+#-------Accuracy-----
+print("Score Accuracy: "+ str(model.score(X = x_test, y = Y_test)))
