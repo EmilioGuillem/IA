@@ -1,0 +1,34 @@
+Notas: 
+
+- Install ollama.exe
+- Main:
+	- pyaudio
+	- sounddevice
+	- wavefile
+	- generate audioFile.wav
+	- SpeechRecognition and pydub
+		- Query to llm model (beta)
+		- Query to ollama server in python
+	- Election insert ?
+		- Database with chromadb (embeddings, audio_input, text_input,[{"source":"audio_date"},{"source":"text_date"}],ids)
+	- reponse to ollama server
+	- generate audio (audio_output)
+	- print(output)
+	- play(output)
+	- insert ? y/n
+		- Database with chromadb (embeddings, audio_output, text_output,[{"source":"audio_date"},{"source":"text_date"}],ids)
+	
+	
+- Classes:
+	- DB
+	- Audio
+	- Recognition
+	- ollama
+	- Constants (DB, Audio, ....)
+	- env file
+	- Embeddings
+	- models:
+		- model_audio
+		- model_reponseText
+		- model_prediction
+		- 
