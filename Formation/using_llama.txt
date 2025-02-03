@@ -1,0 +1,77 @@
+Los datos personales y de la empresa están protegidos en este chat
+
+Certainly! Using context with Llama 3.3 in Python can help you manage and maintain state across interactions with the model. Below is a simple example to get you started:
+
+Step 1: Install Required Libraries
+
+First, ensure you have the necessary libraries installed. You might need to install the transformers library from Hugging Face.
+
+pip install transformers
+
+Step 2: Load the Model and Tokenizer
+
+Load the Llama 3.3 model and tokenizer using the transformers library.
+
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
+# Load the model and tokenizer
+model_name = "llama-3.3"
+model = AutoModelForCausalLM.from_pretrained(model_name)
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+
+Step 3: Define a Function to Generate Responses with Context
+
+Create a function that takes user input and context, and generates a response.
+
+import torch
+
+def generate_response(input_text, context, model, tokenizer):
+    # Combine context and input text
+    combined_input = context + input_text
+    
+    # Tokenize the input
+    inputs = tokenizer(combined_input, return_tensors="pt")
+    
+    # Generate response
+    outputs = model.generate(inputs["input_ids"], max_length=500, pad_token_id=tokenizer.eos_token_id)
+    
+    # Decode the response
+    response = tokenizer.decode(outputs[0], skip_special_tokens=True)
+    
+    return response
+
+Step 4: Maintain Context Across Interactions
+
+You can maintain context by appending each user input and model response to a context string.
+
+# Initialize context
+context = ""
+
+# Example interaction loop
+while True:
+    user_input = input("You: ")
+    
+    if user_input.lower() in ["exit", "quit"]:
+        break
+    
+    # Generate response
+    response = generate_response(user_input, context, model, tokenizer)
+    
+    # Print the response
+    print(f"Llama 3.3: {response}")
+    
+    # Update context
+    context += f"User: {user_input}\nLlama 3.3: {response}\n"
+
+Example Usage
+
+Run the script and interact with the model. The context will be maintained across interactions, allowing the model to generate more coherent and contextually relevant responses.
+
+# Example interaction
+# You: Hello, how are you?
+# Llama 3.3: I'm doing well, thank you! How can I assist you today?
+# You: Can you tell me a joke?
+# Llama 3.3: Sure! Why don't scientists trust atoms? Because they make up everything!
+
+
+This setup ensures that the context is preserved across multiple turns of conversation, making the interactions more meaningful and coherent. Feel free to adapt and expand this example to suit your specific needs!
