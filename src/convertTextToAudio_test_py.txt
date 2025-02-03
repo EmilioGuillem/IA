@@ -1,0 +1,16 @@
+from gtts import gTTS
+import os
+
+# Define the text you want to convert to audio
+text = "Hello, this is a sample text to convert to audio using Python."
+
+# Create a gTTS object
+tts = gTTS(text=text, lang='en')
+
+# Save the audio file
+tts.save("output.mp3")
+
+# Optionally, play the audio file
+os.system("start output.mp3")  # For Windows
+# os.system("afplay output.mp3")  # For macOS
+# os.system("mpg321 output.mp3")  # For Linux
