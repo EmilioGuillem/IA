@@ -11,15 +11,20 @@
 
 # text = respuesta.choices[0].text.strip()
 # print(text)
-import ollama
+import Ollama
+
 
 def main():
-    newOllamaConnexion = ollama()
-    print(newOllamaConnexion.url)
-    q = "Cuál es la capital de España ?"
-
-    newOllamaConnexion.getReponse(q)
     
-
+    
+    q = "Hola!"
+    newOllamaConnexion = Ollama.OllamaChat(q)
+    newOllamaConnexion.getReponseOllamaChat(q)
+    # newOllamaConnexion.chat_with_ollama(q)
+    while True:
+        input_user = input("")
+        newOllamaConnexion = Ollama.OllamaChat(input_user)
+        newOllamaConnexion.getReponseOllamaChat(input_user)
+        
 if __name__ == "__main__":
     main()
