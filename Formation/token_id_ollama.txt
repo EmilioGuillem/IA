@@ -1,0 +1,71 @@
+Los datos personales y de la empresa están protegidos en este chat
+
+Certainly! Using a token ID with the Ollama Python API is straightforward. Here's a concise guide to help you get started:
+
+Step 1: Install the Ollama Python SDK
+
+First, ensure you have the Ollama Python SDK installed. You can install it using pip:
+
+pip install ollama
+
+Step 2: Import the Ollama Library
+
+Import the necessary modules in your Python script:
+
+import ollama
+
+Step 3: Set Up Your Token ID
+
+You'll need to set your token ID to authenticate your requests. You can do this by setting an environment variable or directly in your script.
+
+Option A: Using Environment Variable
+
+Set the environment variable OLLAMA_TOKEN in your terminal:
+
+export OLLAMA_TOKEN='your_token_id_here'
+
+Option B: Directly in Your Script
+
+Alternatively, you can set the token directly in your script:
+
+ollama.api_key = 'your_token_id_here'
+
+Step 4: Make API Requests
+
+Now, you can make requests to the Ollama API. Here's an example of how to fetch data:
+
+# Example function to fetch data
+def fetch_data():
+    response = ollama.get_data()
+    if response.status_code == 200:
+        print("Data fetched successfully!")
+        print(response.json())
+    else:
+        print("Failed to fetch data:", response.status_code)
+
+# Call the function
+fetch_data()
+
+Complete Example
+
+Here's a complete example putting it all together:
+
+import ollama
+
+# Set your token ID
+ollama.api_key = 'your_token_id_here'
+
+# Function to fetch data
+def fetch_data():
+    response = ollama.get_data()
+    if response.status_code == 200:
+        print("Data fetched successfully!")
+        print(response.json())
+    else:
+        print("Failed to fetch data:", response.status_code)
+
+# Call the function
+fetch_data()
+
+
+This should help you get started with using a token ID on the Ollama Python API. If you encounter any issues or need further assistance, feel free to ask!

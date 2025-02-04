@@ -26,6 +26,7 @@ class OllamaChat:
             self.model = "llama3.2"
             self.content = [{'role':'user', 'content':qst}]
             self.memory = ConversationBufferMemory()
+            self.messages=""
     
     #Suprimir        
     # def getReponse(self, data:json):
@@ -45,6 +46,9 @@ class OllamaChat:
         reponse = ollama.chat(
             model = self.model,
             messages = self.content,
+            options={
+                    'num_ctx': 4096
+                }
         )
         self.content = new_message.append({'role':'system', 'content':reponse})
         
@@ -60,6 +64,9 @@ class OllamaChat:
             llm = ollama.chat(
                 model = self.model,
                 messages = self.content,
+                options={
+                        'num_ctx': 4096
+                    }
             ),
             verbose = True,
             memory=newmemory
@@ -68,3 +75,26 @@ class OllamaChat:
         print(response)
         
         return response
+    
+    def chat_with_ollama_history(self, user_input):
+        messages=""
+        while True:
+            user_input = input('Chat with history: ')
+            new_message = [{'role':'user', 'content':user_input}]
+            response = ollama.chat(
+                model = self.model,
+                messages=new_message
+                + [
+                {'role': 'user', 'content': user_input},
+                ],
+                options={
+                        'num_ctx': 4096
+                    },
+            )
+
+            # Add the response to the messages to maintain the history
+            messages += [
+                {'role': 'user', 'content': user_input},
+                {'role': 'assistant', 'content': response.message.content},
+            ]
+            print(response.message.content + '\n')

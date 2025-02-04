@@ -19,12 +19,12 @@ def main():
     
     q = "Hola!"
     newOllamaConnexion = Ollama.OllamaChat(q)
-    newOllamaConnexion.getReponseOllamaChat(q)
-    # newOllamaConnexion.chat_with_ollama(q)
-    while True:
-        input_user = input("")
-        newOllamaConnexion = Ollama.OllamaChat(input_user)
-        newOllamaConnexion.getReponseOllamaChat(input_user)
-        
+    # newOllamaConnexion.getReponseOllamaChat(q)
+    # # newOllamaConnexion.chat_with_ollama(q)
+    # while True:
+    #     input_user = input("")
+    #     newOllamaConnexion = Ollama.OllamaChat(input_user)
+    #     newOllamaConnexion.getReponseOllamaChat(input_user)
+    newOllamaConnexion.chat_with_ollama_history(q)
 if __name__ == "__main__":
     main()
