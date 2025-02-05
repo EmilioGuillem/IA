@@ -32,6 +32,8 @@ class OllamaChat:
             self.memory = ConversationBufferMemory()
             self.messages=""
             self.chat_history = []
+            self.chat_history_txt =""
+            self.context_db()
     
     #Suprimir        
     # def getReponse(self, data:json):
@@ -65,14 +67,27 @@ class OllamaChat:
             newfile = open(new_file_path)
             content = newfile.read()
             newfile.close
-            self.chat_history.append(content)
-            
-    def chat_with_ollama_history(self, user_input):
+            # self.chat_history.append(content)
+            self.chat_history_txt = ''.join(str(x) for x in self.chat_history)+"\n"+content
+    
+    def context_db(self):
         #create context IA"
         folder_path = Path("C:\\Users\\Emilio Guillem\\Documents\\GIT\\IA\\src\\context_db")
         for file_path in folder_path.iterdir():
             self.append_context(file_path)
-                
+            
+        self.chat_history.append({'role':'user', 'content':self.chat_history_txt})
+        response = ollama.chat(
+            model = self.model,
+            messages=self.chat_history,
+            options={
+                    'num_ctx': 4096,
+                    'temperature': 0.7,
+                    'repeat_penalty':1.2
+                },
+        ) 
+    def chat_with_ollama_history(self, user_input):       
+        # self.context_db()       
                 
         while True:
             user_input = input('Emilio: ')
@@ -82,12 +97,12 @@ class OllamaChat:
             if user_input.lower().__contains__("base de datos") or user_input.lower().__contains__("database"):
                 if user_input.lower().__contains__("almacena") or user_input.lower().__contains__("insert") or user_input.lower().__contains__("guarda"):
                     now = datetime.datetime.now()
-                    newFilePath = "C:\\Users\\Emilio Guillem\\Documents\\GIT\\IA\\src\\context_db\\context_"+str(now.strftime("%d%m%Y")+".txt")
+                    newFilePath = Path("C:\\Users\\Emilio Guillem\\Documents\\GIT\\IA\\src\\context_db\\context_"+str(now.strftime("%d%m%Y")+".txt"))
                     if os.path.exists(newFilePath):
                         self.append_context(newFilePath)
                         
                     newfile  = open(newFilePath, "w+")
-                    newfile.write(''.join(str(x) for x in self.chat_history))
+                    newfile.write(self.chat_history_txt+''.join(str(x) for x in self.chat_history))
                     newfile.close()
                        
             self.chat_history.append({'role':'user', 'content':user_input})
