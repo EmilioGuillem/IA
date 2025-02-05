@@ -60,7 +60,7 @@ class OllamaChat:
         messages=""
         chat_history= []
         while True:
-            user_input = input('Orbital: ')
+            user_input = input('Emilio: ')
             # new_message = [{'role':'user', 'content':user_input}]
             chat_history.append({'role':'user', 'content':user_input})
             response = ollama.chat(
