@@ -11,7 +11,7 @@
 
 # text = respuesta.choices[0].text.strip()
 # print(text)
-import Ollama
+import src.models.ollama as Ollama
 
 
 def main():

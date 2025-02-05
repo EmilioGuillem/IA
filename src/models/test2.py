@@ -15,7 +15,7 @@
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 # Load the model and tokenizer
-model_name = "llama-3.3"
+model_name = "llama3.2"
 model = AutoModelForCausalLM.from_pretrained(model_name)
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 
@@ -58,10 +58,10 @@ while True:
     response = generate_response(user_input, context, model, tokenizer)
     
     # Print the response
-    print(f"Llama 3.3: {response}")
+    print(f"llama3.2: {response}")
     
     # Update context
-    context += f"User: {user_input}\nLlama 3.3: {response}\n"
+    context += f"User: {user_input}\nllama3.2: {response}\n"
 
 # Example Usage
 
