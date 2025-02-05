@@ -76,7 +76,7 @@ class OllamaChat:
         
         return response
     
-    def chat_with_ollama_history(self, user_input):
+    def chat_with_ollama_history_old(self, user_input):
         messages=""
         while True:
             user_input = input('Chat with history: ')
@@ -97,4 +97,25 @@ class OllamaChat:
                 {'role': 'user', 'content': user_input},
                 {'role': 'assistant', 'content': response.message.content},
             ]
+            print(response.message.content + '\n')
+            
+    def chat_with_ollama_history(self, user_input):
+        messages=""
+        chat_history= []
+        while True:
+            user_input = input('Chat with history: ')
+            # new_message = [{'role':'user', 'content':user_input}]
+            chat_history.append({'role':'user', 'content':user_input})
+            response = ollama.chat(
+                model = self.model,
+                messages=chat_history,
+                options={
+                        'num_ctx': 4096,
+                        'temperature': 0.7,
+                        'repeat_penalty':1.2
+                    },
+            )
+
+            # Add the response to the messages to maintain the history
+            chat_history.append(response['message'])
             print(response.message.content + '\n')
