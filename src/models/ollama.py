@@ -55,55 +55,12 @@ class OllamaChat:
         self.resultQuery= reponse.message.content
         print(self.resultQuery)
         
-    
-    # Use memory to store past prompts and responses
-    def chat_with_ollama(self,user_input):
-        # Retrieve past conversations
-        newmemory = ConversationBufferMemory()
-        newconver = conversation(
-            llm = ollama.chat(
-                model = self.model,
-                messages = self.content,
-                options={
-                        'num_ctx': 4096
-                    }
-            ),
-            verbose = True,
-            memory=newmemory
-        )     
-        response = newconver(input=user_input)
-        print(response)
-        
-        return response
-    
-    def chat_with_ollama_history_old(self, user_input):
-        messages=""
-        while True:
-            user_input = input('Chat with history: ')
-            new_message = [{'role':'user', 'content':user_input}]
-            response = ollama.chat(
-                model = self.model,
-                messages=new_message
-                + [
-                {'role': 'user', 'content': user_input},
-                ],
-                options={
-                        'num_ctx': 4096
-                    },
-            )
-
-            # Add the response to the messages to maintain the history
-            messages += [
-                {'role': 'user', 'content': user_input},
-                {'role': 'assistant', 'content': response.message.content},
-            ]
-            print(response.message.content + '\n')
-            
+         
     def chat_with_ollama_history(self, user_input):
         messages=""
         chat_history= []
         while True:
-            user_input = input('Chat with history: ')
+            user_input = input('Orbital: ')
             # new_message = [{'role':'user', 'content':user_input}]
             chat_history.append({'role':'user', 'content':user_input})
             response = ollama.chat(
