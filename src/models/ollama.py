@@ -13,7 +13,6 @@ import os
 import datetime
 
 from pathlib import Path
-    
 
 class OllamaChat:
     def __init__(self, qst):
@@ -70,6 +69,20 @@ class OllamaChat:
             # self.chat_history.append(content)
             self.chat_history_txt = ''.join(str(x) for x in self.chat_history)+"\n"+content
     
+    def append_context_json(self, new_file_path:Path):
+        if new_file_path.is_file():
+            with open(new_file_path, 'r') as json_file:
+                data = json.load(json_file)
+            
+            # Append new data
+            data.append(self.chat_history)
+
+            # Write updated data back to the file
+            with open(new_file_path, 'w') as file:
+                json.dump(data, file, indent=4)
+
+            print("Data appended successfully!")
+            
     def context_db(self):
         #create context IA"
         folder_path = Path("C:\\Users\\Emilio Guillem\\Documents\\GIT\\IA\\src\\context_db")
@@ -90,8 +103,8 @@ class OllamaChat:
         # self.context_db()       
                 
         while True:
-            user_input = input('Emilio: ')
-
+            user_input = input('User: ')
+            user_input = now.today().strftime("%d-%m-%Y %H:%M:%S") + ": " + user_input
             if user_input.lower().__contains__("Orbital, apaga") or user_input.lower().__contains__("stop conversation") or user_input.lower().__contains__("finaliza conversacion")or user_input.lower().__contains__("finaliza conversación")or user_input.lower().__contains__("cerrar"):
                 break
             if user_input.lower().__contains__("base de datos") or user_input.lower().__contains__("database"):
@@ -99,6 +112,7 @@ class OllamaChat:
                     now = datetime.datetime.now()
                     # newFilePath = Path("C:\\Users\\Emilio Guillem\\Documents\\GIT\\IA\\src\\context_db\\context_"+str(now.strftime("%d%m%Y")+".txt"))
                     newFilePath = Path("C:\\Users\\Emilio Guillem\\Documents\\GIT\\IA\\src\\context_db\\context")
+                    newFilePath = Path("C:\\Users\\Emilio Guillem\\Documents\\GIT\\IA\\src\\context_db\\context.json")
                     if os.path.exists(newFilePath):
                         self.append_context(newFilePath)
                         
