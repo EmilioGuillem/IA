@@ -26,7 +26,8 @@ class OllamaChat:
                 "stream":True
             }
             self.resultQuery = "{}"
-            self.model = "llama3.2"
+            # self.model = "llama3.2"
+            self.model = "orbital"
             self.content = [{'role':'user', 'content':qst}]
             self.memory = ConversationBufferMemory()
             self.messages=""
