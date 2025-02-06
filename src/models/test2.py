@@ -1,77 +1,117 @@
-# Los datos personales y de la empresa están protegidos en este chat
-
-# Certainly! Using context with Llama 3.3 in Python can help you manage and maintain state across interactions with the model. Below is a simple example to get you started:
+# Absolutely! Fine-tuning a language model like LLaMA 3.2B involves several steps. Below is a concise example of how you might fine-tune the model using Python and the Hugging Face Transformers library. This example assumes you have a dataset ready for fine-tuning.
 
 # Step 1: Install Required Libraries
 
-# First, ensure you have the necessary libraries installed. You might need to install the transformers library from Hugging Face.
+# First, ensure you have the necessary libraries installed:
 
-# pip install transformers
+# pip install transformers datasets torch
 
-# Step 2: Load the Model and Tokenizer
+# Step 2: Load the Model and Dataset
 
-# Load the Llama 3.3 model and tokenizer using the transformers library.
+# Here's a basic script to load the model and dataset, and then fine-tune it:
 
-from transformers import AutoModelForCausalLM, AutoTokenizer
-
-# Load the model and tokenizer
-model_name = "llama3.2"
-model = AutoModelForCausalLM.from_pretrained(model_name)
-tokenizer = AutoTokenizer.from_pretrained(model_name)
-
-# Step 3: Define a Function to Generate Responses with Context
-
-# Create a function that takes user input and context, and generates a response.
-
+from pathlib import Path
 import torch
+from transformers import Trainer, TrainingArguments
+from datasets import load_dataset
 
-def generate_response(input_text, context, model, tokenizer):
-    # Combine context and input text
-    combined_input = context + input_text
-    
-    # Tokenize the input
-    inputs = tokenizer(combined_input, return_tensors="pt")
-    
-    # Generate response
-    outputs = model.generate(inputs["input_ids"], max_length=500, pad_token_id=tokenizer.eos_token_id)
-    
-    # Decode the response
-    response = tokenizer.decode(outputs[0], skip_special_tokens=True)
-    
-    return response
+# Load model directly
+from transformers import AutoTokenizer, AutoModelForCausalLM
 
-# Step 4: Maintain Context Across Interactions
+tokenizer = AutoTokenizer.from_pretrained("meta-llama/Llama-3.2-3B", token="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")
+tokenizer.add_special_tokens
+tokenizer.pad_token= "<|end_of_text|>"
+tokenizer.padding_side="right"
+model = AutoModelForCausalLM.from_pretrained("meta-llama/Llama-3.2-3B", torch_dtype=torch.float32, device_map="auto")
+tokenizer.pad_token= tokenizer.eos_token
+# Load your dataset
+dataset = load_dataset("text", data_files="C:\\Users\\Emilio Guillem\\Documents\\GIT\\IA\\src\\context_db\\context.txt", encoding='latin-1', split="train")
+dataset.to_dict()
+# dataset_train, dataset_eval =dataset.train_test_split(test_size=0.2, seed=42)
+dataset = dataset.shuffle(seed=80)
+# Tokenize the dataset
+import nltk
+nltk.download('punkt')
+file_content = open("C:\\Users\\Emilio Guillem\\Documents\\GIT\\IA\\src\\context_db\\context.txt").read()
+tokens_dt = nltk.word_tokenize(file_content)
+def tokenize_function(examples):
+    tokens_dt = tokenizer(examples["text"], padding="max_length", truncation=True, max_length=128)
+    tokens=[
+        -100 if token == tokenizer.pad_token_id else token for token in tokens_dt
+    ]
+    return tokens
 
-# You can maintain context by appending each user input and model response to a context string.
+tokenized_datasets = dataset.map(tokenize_function)
+tokenized_datasets = tokenized_datasets.remove_columns(['text'])
+model.train()
+# Set training arguments
+training_args = TrainingArguments(
+    output_dir="./results",
+    eval_strategy="steps",
+    eval_steps=40,
+    logging_steps=40,
+    save_steps=150,
+    learning_rate=2e-5,
+    per_device_train_batch_size=2,
+    per_device_eval_batch_size=2,
+    num_train_epochs=2,
+    fp16=False,
+    log_level="info",
+    weight_decay=0.01,
+    max_grad_norm=2
+)
+# from trl import SFTConfig, SFTTrainer
+# training_args = SFTConfig(
+#     output_dir="./results",
+#     optim="adamw_torch_fused",
+#     evaluation_strategy="steps",
+#     eval_steps=40,
+#     logging_steps=10,
+#     save_strategy="epoch",
+#     learning_rate=2e-4,
+#     per_device_train_batch_size=16,
+#     per_device_eval_batch_size=16,
+#     gradient_accumulation_steps=4,
+#     gradient_checkpointing = True,
+#     num_train_epochs=5,
+#     fp16=False,
+#     bf16=True,
+#     log_level="info",
+#     weight_decay=0.01,
+#     max_grad_norm=0.3,
+#     warmup_ratio=0.03,
+#     lr_scheduler_type="cosine",
+#     dataset_text_field="text",
+#     report_to="tensorboard",
+#     gradient_checkpointing_kwargs={"use_reentrant": False},
+# )
 
-# Initialize context
-context = ""
-
-# Example interaction loop
-while True:
-    user_input = input("You: ")
-    
-    if user_input.lower() in ["exit", "quit"]:
-        break
-    
-    # Generate response
-    response = generate_response(user_input, context, model, tokenizer)
-    
-    # Print the response
-    print(f"llama3.2: {response}")
-    
-    # Update context
-    context += f"User: {user_input}\nllama3.2: {response}\n"
-
-# Example Usage
-
-# Run the script and interact with the model. The context will be maintained across interactions, allowing the model to generate more coherent and contextually relevant responses.
-
-# Example interaction
-# You: Hello, how are you?
-# Llama 3.3: I'm doing well, thank you! How can I assist you today?
-# You: Can you tell me a joke?
-# Llama 3.3: Sure! Why don't scientists trust atoms? Because they make up everything!
+# Initialize the Trainer
+trainer = Trainer(
+    model=model,
+    args=training_args,
+    train_dataset=tokenized_datasets['train'],
+    eval_dataset=tokenized_datasets['test']
+)
 
 
-# This setup ensures that the context is preserved across multiple turns of conversation, making the interactions more meaningful and coherent. Feel free to adapt and expand this example to suit your specific needs!
+# Fine-tune the model
+trainer.train()
+
+# Step 3: Save the Fine-Tuned Model
+
+# After training, you can save the fine-tuned model:
+
+# model.save_pretrained("C:/Users/Emilio Guillem/Documents/GIT/IA/src/llm/fine_tuned_llama")
+# tokenizer.save_pretrained("C:/Users/Emilio Guillem/Documents/GIT/IA/src/llm/fine_tuned_llama")
+
+# Notes:
+# Dataset: Replace "path_to_your_dataset" with the actual path or name of your dataset.
+# Hyperparameters: Adjust the hyperparameters (e.g., learning rate, batch size, number of epochs) as needed for your specific use case.
+# Hardware: Ensure you have the necessary hardware (e.g., GPU) to handle the fine-tuning process, especially for large models like LLaMA 3.2B.
+
+# Feel free to adapt this script to better fit your needs. Happy fine-tuning!
+import os
+os.environ['HF_TOKENIZER'] = "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"
+model.push_to_hub("Emiliogs/orbital", use_auth_token=os.getenv("HF_TOKEN"))
+tokenizer.push_to_hub("Emiliogs/orbital", use_auth_token=os.getenv("HF_TOKEN"))

@@ -97,7 +97,8 @@ class OllamaChat:
             if user_input.lower().__contains__("base de datos") or user_input.lower().__contains__("database"):
                 if user_input.lower().__contains__("almacena") or user_input.lower().__contains__("insert") or user_input.lower().__contains__("guarda"):
                     now = datetime.datetime.now()
-                    newFilePath = Path("C:\\Users\\Emilio Guillem\\Documents\\GIT\\IA\\src\\context_db\\context_"+str(now.strftime("%d%m%Y")+".txt"))
+                    # newFilePath = Path("C:\\Users\\Emilio Guillem\\Documents\\GIT\\IA\\src\\context_db\\context_"+str(now.strftime("%d%m%Y")+".txt"))
+                    newFilePath = Path("C:\\Users\\Emilio Guillem\\Documents\\GIT\\IA\\src\\context_db\\context")
                     if os.path.exists(newFilePath):
                         self.append_context(newFilePath)
                         
