@@ -23,7 +23,7 @@ small_eval_dataset = tokenized_datasets.shuffle(seed=42).select(range(1000))
 #trainin pytorch model
 from transformers import AutoModelForSequenceClassification
 
-model = AutoModelForSequenceClassification.from_pretrained("google-bert/bert-base-cased", num_labels=5, torch_dtype="auto")
+model = AutoModelForSequenceClassification.from_pretrained("meta-llama/Llama-3.2-3B", num_labels=5, torch_dtype="auto")
 from transformers import TrainingArguments
 
 training_args = TrainingArguments(output_dir="test_trainer")
