@@ -66,6 +66,7 @@ class OllamaChat:
          if new_file_path.is_file():
             newfile = open(new_file_path)
             content = newfile.read()
+            content = "Histórico de conversaciones anteriores : " + content
             newfile.close
             # self.chat_history.append(content)
             self.chat_history_txt = ''.join(str(x) for x in self.chat_history)+"\n"+content
@@ -87,8 +88,9 @@ class OllamaChat:
     def context_db(self):
         #create context IA"
         folder_path = Path("C:\\Users\\Emilio Guillem\\Documents\\GIT\\IA\\src\\context_db")
-        for file_path in folder_path.iterdir():
-            self.append_context(file_path)
+        file_path = Path("C:\\Users\\Emilio Guillem\\Documents\\GIT\\IA\\src\\context_db\\context.txt")
+        # for file_path in folder_path.iterdir():
+        self.append_context(file_path)
             
         self.chat_history.append({'role':'user', 'content':self.chat_history_txt})
         response = ollama.chat(
@@ -113,7 +115,7 @@ class OllamaChat:
                     now = datetime.datetime.now()
                     # newFilePath = Path("C:\\Users\\Emilio Guillem\\Documents\\GIT\\IA\\src\\context_db\\context_"+str(now.strftime("%d%m%Y")+".txt"))
                     newFilePath = Path("C:\\Users\\Emilio Guillem\\Documents\\GIT\\IA\\src\\context_db\\context")
-                    newFilePath = Path("C:\\Users\\Emilio Guillem\\Documents\\GIT\\IA\\src\\context_db\\context.json")
+                    # newFilePath = Path("C:\\Users\\Emilio Guillem\\Documents\\GIT\\IA\\src\\context_db\\context.json")
                     if os.path.exists(newFilePath):
                         self.append_context(newFilePath)
                         
