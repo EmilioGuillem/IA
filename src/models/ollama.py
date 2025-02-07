@@ -97,7 +97,7 @@ class OllamaChat:
         self.append_context_json(file_path_json)
 
         message_history = ({'role':'user', 'content':"Histórico de conversaciones anteriores: \n"+self.chat_history_txt})
-        message_history_json = ({'role':'user', 'content':self.chat_history})
+        message_history_json = self.chat_history
         response = ollama.chat(
             model = self.model,
             messages=message_history,
@@ -107,15 +107,15 @@ class OllamaChat:
                     'repeat_penalty':1.2
                 },
         )
-        # response_json = ollama.chat(
-        #     model = self.model,
-        #     messages=message_history_json,
-        #     options={
-        #             'num_ctx': 4096,
-        #             'temperature': 0.7,
-        #             'repeat_penalty':1.2
-        #         },
-        # )
+        response_json = ollama.chat(
+            model = self.model,
+            messages=message_history_json,
+            options={
+                    'num_ctx': 4096,
+                    'temperature': 0.7,
+                    'repeat_penalty':1.2
+                },
+        )
     def chat_with_ollama_history(self, user_input):
         # self.context_db()
         now = datetime.datetime.now()
