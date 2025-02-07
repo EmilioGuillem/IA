@@ -16,12 +16,10 @@ import Ollama
 
 
 def main():
-    
-    
+
     q = "Hola!"
     newOllamaConnexion = Ollama.OllamaChat()
 
-    # newOllamaConnexion.chat_with_ollama_history(q)
-    newOllamaConnexion.append_context_json(Path("src\context_db\context.json"))
+    newOllamaConnexion.chat_with_ollama_history(q)
 if __name__ == "__main__":
     main()
