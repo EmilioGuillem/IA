@@ -69,6 +69,7 @@ class OllamaChat:
             newfile.close
             # self.chat_history.append(content)
             self.chat_history_txt = content+"\n"+self.chat_history_txt
+            print("Database TXT update successfully!")
 
     def append_context_json(self, new_file_path:Path):
         if new_file_path.is_file():
@@ -76,13 +77,15 @@ class OllamaChat:
                 data = json.load(json_file)
 
             # Append new data
-            self.chat_history.append(data['content'])
+            # self.chat_history.append(data['content'])
+            data.append(self.chat_history)
+            self.chat_history = data
 
             # Write updated data back to the file
             with open(new_file_path, 'w+') as file:
                 json.dump(self.chat_history, file, indent=4)
 
-            print("Data appended successfully!")
+            print("Database update successfully!")
 
 
     def context_db(self):
