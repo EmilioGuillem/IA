@@ -17,9 +17,8 @@ import Ollama
 
 def main():
 
-    q = "Hola!"
     newOllamaConnexion = Ollama.OllamaChat()
 
-    newOllamaConnexion.chat_with_ollama_history(q)
+    newOllamaConnexion.chat_with_ollama_history()
 if __name__ == "__main__":
     main()
