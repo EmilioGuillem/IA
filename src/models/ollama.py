@@ -20,7 +20,7 @@ class OllamaChat:
             }
             self.data = {
                 "model": "mistral",
-                "prompt": qst,
+                "prompt": "",
                 "stream":True
             }
             self.resultQuery = "{}"
