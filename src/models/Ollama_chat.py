@@ -104,7 +104,7 @@ class OllamaChat:
         while var_continue:
             user_input = input('User: ')
             user_input = str(datetime.datetime.now().today().strftime("%d-%m-%Y %H:%M:%S")) + " - " + user_input
-            if user_input.lower().__contains__("Orbital, apaga") or user_input.lower().__contains__("stop conversation") or user_input.lower().__contains__("finaliza conversacion")or user_input.lower().__contains__("finaliza conversación")or user_input.lower().__contains__("cerrar"):
+            if user_input.lower().__contains__("Orbital, apaga") or user_input.lower().__contains__("stop conversation") or user_input.lower().__contains__("finaliza conversacion")or user_input.lower().__contains__("finaliza conversación"):
                 var_continue= False;
                 break;
             if user_input.lower().__contains__("base de datos") or user_input.lower().__contains__("database"):

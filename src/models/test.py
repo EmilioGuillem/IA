@@ -17,7 +17,7 @@ import Ollama_chat
 
 def main():
 
-    newOllamaConnexion = Ollama.OllamaChat()
+    newOllamaConnexion = Ollama_chat.OllamaChat()
 
     newOllamaConnexion.chat_with_ollama_history()
 if __name__ == "__main__":
