@@ -30,8 +30,8 @@ class OllamaChat:
             self.chat_history = []
             self.chat_history_txt =""
             # self.context_db()
-    
-    #Suprimir        
+
+    #Suprimir
     # def getReponse(self, data:json):
     #     response = requests.post(url=self.url, headers=self.headers, data=json.dumps(self.data))
     #     if response.status_code==200:
@@ -42,8 +42,7 @@ class OllamaChat:
     #         self.resultQuery = actual_response
     #     else:
     #         print("Error: ", response.status_code, response.text)
-    
-    
+
     def append_context(self, new_file_path:Path):
          if new_file_path.is_file():
             newfile = open(new_file_path)
@@ -107,13 +106,19 @@ class OllamaChat:
             user_input = str(datetime.datetime.now().today().strftime("%d-%m-%Y %H:%M:%S")) + " - " + user_input
             if user_input.lower().__contains__("Orbital, apaga") or user_input.lower().__contains__("stop conversation") or user_input.lower().__contains__("finaliza conversacion")or user_input.lower().__contains__("finaliza conversación")or user_input.lower().__contains__("cerrar"):
                 var_continue= False;
+                break;
             if user_input.lower().__contains__("base de datos") or user_input.lower().__contains__("database"):
                 if user_input.lower().__contains__("almacena") or user_input.lower().__contains__("insert") or user_input.lower().__contains__("guarda"):
                     newFilePath = Path("C:\\Users\\Emilio Guillem\\Documents\\GIT\\IA\\src\\context_db\\context_txt.txt")
                     newFilePath_json = Path("C:\\Users\\Emilio Guillem\\Documents\\GIT\\IA\\src\\context_db\\context.json")
                     if os.path.exists(newFilePath):
                         self.append_context(newFilePath)
+                    if os.path.exists(newFilePath_json):
                         self.append_context_json(newFilePath_json)
+                    else:
+                        with open(newFilePath_json, 'w+') as file:
+                            json.dump(self.chat_history, file, indent=4)
+                    
 
                     newfile  = open(newFilePath, "w+")
                     newfile.write(self.chat_history_txt)
