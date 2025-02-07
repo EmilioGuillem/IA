@@ -6,8 +6,6 @@ from langchain_community.llms import Ollama
 from langchain.prompts import ChatPromptTemplate
 #import chainlit as cl
 
-#get memory
-from langchain.chains.conversation.memory import ConversationBufferMemory
 from langchain.chains import conversation
 import os
 import datetime
@@ -15,7 +13,7 @@ import datetime
 from pathlib import Path
 
 class OllamaChat:
-    def __init__(self, qst):
+    def __init__(self):
             self.url = "http://localhost:11434/api/generate"
             self.headers = {
                 "Content-Type" : "application/json"
@@ -28,8 +26,6 @@ class OllamaChat:
             self.resultQuery = "{}"
             # self.model = "llama3.2"
             self.model = "orbital"
-            self.content = [{'role':'user', 'content':qst}]
-            self.memory = ConversationBufferMemory()
             self.messages=""
             self.chat_history = []
             self.chat_history_txt =""
@@ -46,23 +42,9 @@ class OllamaChat:
     #         self.resultQuery = actual_response
     #     else:
     #         print("Error: ", response.status_code, response.text)
-            
-    def getReponseOllamaChat(self,query:str):
-        new_message = [{'role':'user', 'content':query}]
-        new_message.append(self.content)
-        reponse = ollama.chat(
-            model = self.model,
-            messages = self.content,
-            options={
-                    'num_ctx': 4096
-                }
-        )
-        self.content = new_message.append({'role':'system', 'content':reponse})
-        
-        self.resultQuery= reponse.message.content
-        print(self.resultQuery)
     
-    def append_context(self, new_file_path:Path):   
+    
+    def append_context(self, new_file_path:Path):
          if new_file_path.is_file():
             newfile = open(new_file_path)
             content = newfile.read()
@@ -116,7 +98,7 @@ class OllamaChat:
                     'repeat_penalty':1.2
                 },
         )
-    def chat_with_ollama_history(self, user_input):
+    def chat_with_ollama_history(self):
         # self.context_db()
         now = datetime.datetime.now()
         var_continue = True

@@ -19,17 +19,9 @@ def main():
     
     
     q = "Hola!"
-    newOllamaConnexion = Ollama.OllamaChat(q)
-    # newOllamaConnexion.getReponseOllamaChat(q)
-    # # newOllamaConnexion.chat_with_ollama(q)
-    # while True:
-    #     input_user = input("")
-    #     newOllamaConnexion = Ollama.OllamaChat(input_user)
-    #     newOllamaConnexion.getReponseOllamaChat(input_user)
+    newOllamaConnexion = Ollama.OllamaChat()
+
     # newOllamaConnexion.chat_with_ollama_history(q)
-    newOllamaConnexion.chat_history.append({
-            "role": "user",
-            "content": "07-02-2025 13:22:51: Esto es un test de formato Json"})
     newOllamaConnexion.append_context_json(Path("src\context_db\context.json"))
 if __name__ == "__main__":
     main()
