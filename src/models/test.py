@@ -11,6 +11,7 @@
 
 # text = respuesta.choices[0].text.strip()
 # print(text)
+from pathlib import Path
 import Ollama
 
 
@@ -25,6 +26,10 @@ def main():
     #     input_user = input("")
     #     newOllamaConnexion = Ollama.OllamaChat(input_user)
     #     newOllamaConnexion.getReponseOllamaChat(input_user)
-    newOllamaConnexion.chat_with_ollama_history(q)
+    # newOllamaConnexion.chat_with_ollama_history(q)
+    newOllamaConnexion.chat_history.append({
+            "role": "user",
+            "content": "07-02-2025 13:22:51: Esto es un test de formato Json"})
+    newOllamaConnexion.append_context_json(Path("src\context_db\context.json"))
 if __name__ == "__main__":
     main()

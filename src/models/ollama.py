@@ -33,7 +33,7 @@ class OllamaChat:
             self.messages=""
             self.chat_history = []
             self.chat_history_txt =""
-            self.context_db()
+            # self.context_db()
     
     #Suprimir        
     # def getReponse(self, data:json):
@@ -80,7 +80,7 @@ class OllamaChat:
 
             # Write updated data back to the file
             with open(new_file_path, 'w+') as file:
-                json.dump(data, file, indent=4)
+                json.dump(self.chat_history, file, indent=4)
 
             print("Data appended successfully!")
 
