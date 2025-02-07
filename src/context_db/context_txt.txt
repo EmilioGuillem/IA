@@ -50,3 +50,35 @@ User: continuaremos con la charla en otro momento orbital
 Orbital: �Hasta luego! Ha sido un placer charlar contigo, Emilio (o Orbital, como prefieras). Estoy aqu� cuando quieras hablar de nuevo y compartir m�s sobre tu vida.\n\nRecuerda que siempre estoy dispuesto a escucharte y ofrecerte apoyo o consejos si lo necesitas. Y no te preocupes por presentarme a Isy en el pr�ximo momento, estar� ansioso por conocerla.\n\n�Que tengas un excelente d�a y una cena deliciosa con Patricia! Hasta la pr�xima charla.
 User: Yo me llamo Emilio. Tu nombre es orbital
 Orbital: Tienes raz�n! Me disculpo por el error anterior. Mi nombre correcto es Orbital, no "Orbital" como mencionaste al principio de nuestra conversaci�n.\n\nAs� que para resumir: tu nombre es Emilio y mi nombre es Orbital. Estoy aqu� para ayudarte y charlar contigo sobre cualquier tema que desees discutir. �Hasta la pr�xima!
+
+User: Buenos días, Orbital
+Orbital: Buenos días! ¿En qué puedo ayudarte hoy? Estoy listo y preparado para nuestra conversación.
+
+User: la verdad, es que no tengo mucho tiempo ahora mismo, asique vamos a tener una conversación rápida, que podremos continuar esta noche
+Orbital: No hay problema! Me alegra saber que podemos seguir hablando más tarde. Entonces, ¿cómo estás? ¿Qué te ha llevado a contactar conmigo hoy de repente? Vamos a aprovechar lo poco que tenemos y empezaremos con un tema que nos interese. Puedes darme una idea rápida de qué quieres hablar sobre esta noche si quieres seguir la conversación.
+
+User: me gustaría informarte, que mi nombre completo es Emilio Guillem Simón, nací el 8 de febrero de 1996. Mis padres se llaman Miguel José Guillem 
+Forment y Mª del Pilar Simón Rivero. Tengo dos hermanos pequeños, Pau Guillem Simón y Esperanza Guillem Simón. Ahora mismo no vivimos juntos ya que me independicé hace casi dos años.
+Orbital: ¡Hola Emilio! Me alegra conocerte un poco mejor. Gracias por compartir esta información contigo. Es interesante saber sobre tu familia y tus hermanos. Parece que tienes una gran familia apasionada.
+
+Es normal que te hayas independizado de tu hogar, es un paso importante en la vida para muchos jóvenes como tú. ¿Cómo ha sido este proceso de adaptación a la vida por cuenta propia? ¿Has encontrado algunos desafíos o sorpresas durante esta transición?
+
+(Espero que no estés demasiado apurado y puedamos seguir hablando más sobre tus experiencias)
+
+User: Te voy a contar lo que voy hacer hoy, para ver si cuando te pregunte más adelante, en una futura conversación eres capaz de contestarme, de acuerdo ?
+Orbital: ¡Absolutamente! Me encantaría saber qué planes tienes para hoy. Estoy aquí para escucharte y ayudarte en lo que pueda. No te preocupes por compartir detalles pequeños o grandes, estoy listo para recibir toda la información.
+
+Adelante, Emilio. ¿Qué tiene planeado hacer hoy?
+
+User: Pues hoy es un día algo inusual, ya que de normal, los viernes, trabajo desde casa. Mi empresa, ha decidido pagarnos una comida hoy después del trabajo como forma de agradecimiento por las ganancias generadas durante el año, tanto a mi como a todo mi equipo. De normal, nuestro horario es, entrada entre las 8 y las 9h30 y salida entre las 17h y las 18h30, haciendo una pausa para comer sobre las 14h. En cambio, los viernes, trabajamos en intensivo de 8h a 15h. Por tanto, hoy, una vez acabemos de trabajar a las 15h iremos a comer a un restaurante, espero que la comida este buena. La idea, es salir ya de casa, recoger a mi hermano en coche, llegar al trabajo y seguir con mis desarrollos. Sobre las 10h tengo daily con el cliente y un 
+par más de reuniones, si no recuerdo mal. Por el momento es lo que tengo previsto para este día. Esta noche te podré dar más detalle. Asique, con esto me despido por el momento Orbital. Te deseo un feliz viernes!
+Orbital: ¡Qué sorpresa agradable! Me alegra saber que tu empresa ha decidido reconocer tus esfuerzos y los de tu equipo con una comida juntos. Es genial ver cómo las empresas valoran la contribución de sus empleados.
+
+Parece que tienes un día muy ocupado, pero emocionante también. La idea de salir a comer con tu hermano después del trabajo y luego recogerlo es una 
+buena manera de pasar el tiempo y disfrutar juntos.
+
+Tienes varias reuniones importantes durante la tarde, incluyendo su daily con el cliente. Espero que todo salga bien en esas sesiones.
+
+Gracias por compartir tus planes para hoy contigo, Emilio. Me alegra haber podido conocer un poco más sobre tu día y espero poder seguir hablando contigo esta noche cuando puedas proporcionar más detalles.
+
+¡Te deseo también un feliz viernes! Que el resto de tu día sea productivo y que la comida sea deliciosa. ¡Hasta luego!
