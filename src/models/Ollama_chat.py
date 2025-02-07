@@ -116,7 +116,7 @@ class OllamaChat:
                     if os.path.exists(newFilePath_json):
                         self.append_context_json(newFilePath_json)
                     else:
-                        with open(newFilePath_json, 'w+') as file:
+                        with open(newFilePath_json, 'w') as file:
                             json.dump(self.chat_history, file, indent=4)
                     
 
@@ -124,7 +124,7 @@ class OllamaChat:
                     newfile.write(self.chat_history_txt)
                     newfile.close()
 
-            self.chat_history.append({'role':'user', 'content':str(datetime.datetime.now().today().strftime("%d-%m-%Y %H:%M:%S")) + " - " + user_input})
+            self.chat_history.append({'role':'user', 'content':user_input})
             response = ollama.chat(
                 model = self.model,
                 messages=self.chat_history,
@@ -138,5 +138,5 @@ class OllamaChat:
             # Add the response to the messages to maintain the history
             # self.chat_history.append(response['message'])
             self.chat_history.append({'role':'assistant', 'content': str(datetime.datetime.now().today().strftime("%d-%m-%Y %H:%M:%S")) + " - " + response.message.content})
-            self.chat_history_txt += "User: "+user_input+"\n"+"Orbital: "+ str(datetime.datetime.now().today().strftime("%d-%m-%Y %H:%M:%S")) + " - " + response.message.content
+            self.chat_history_txt += "User: "+user_input+"\n"+"Orbital: "+ str(datetime.datetime.now().today().strftime("%d-%m-%Y %H:%M:%S")) + " - " + response.message.content+"\n"
             print("Orbital: " + response.message.content + '\n')
