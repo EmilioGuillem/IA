@@ -12,7 +12,7 @@
 # text = respuesta.choices[0].text.strip()
 # print(text)
 from pathlib import Path
-import Ollama
+import Ollama_chat
 
 
 def main():
