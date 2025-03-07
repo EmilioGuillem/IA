@@ -1,0 +1,56 @@
+DROP TABLE Pelicula;
+DROP TABLE Director;
+DROP TABLE Productora;
+
+CREATE TABLE Pelicula(
+    id_pelicula number(10) primary key,
+    titulo varchar2(100),
+	año number(5),
+    genero varchar2(100), 
+    director number(10),
+    productora number(10)
+    );
+CREATE TABLE Director(
+    id_director number(10) primary key,
+    nombre varchar2(100),
+	nacionalidad varchar2(100)
+);
+
+CREATE TABLE Productora(
+    id_productora number(10) primary key,
+    nombre varchar2(100),
+	pais varchar2(100)
+    
+);
+
+ALTER TABLE pelicula
+add constraint director foreign key(director) references Director(id_director);
+ALTER TABLE pelicula
+add constraint productora foreign key(productora) references Productora(id_productora);
+
+desc pelicula;
+desc director;
+desc productora;
+
+INSERT INTO Director values(1,'Steven Spielberg','Estadounidense');
+INSERT INTO Director values(2,'Patty Jenkins','Estadounidense');
+INSERT INTO Director values(3,'Julius Avery','Australiano');
+INSERT INTO Director values(4,'Guy Ritchie','Británico');
+
+
+INSERT INTO Productora values(1,'Warner Bros','Estados Unidos');
+INSERT INTO Productora values(2,'Paramount Pictures','California');
+INSERT INTO Productora values(3,'20th Century Fox','Estados Unidos');
+
+delete from pelicula;
+INSERT INTO pelicula values(1,'Ready Player One: Comienza el juego',2018,'Ciencia Ficción',1,1);
+INSERT INTO pelicula values(2,'Mujer Maravilla',2017,'Ciencia Ficción',2,1);
+INSERT INTO pelicula values(3,'Overlord',2018,'Terror',3,2);
+INSERT INTO pelicula values(4,'Snatch, cerdos y diamantes', 2000,'Acción',4,3);
+INSERT INTO pelicula values(5,'Pruebas Varias', 1982,'Comedia',2,3);
+INSERT INTO pelicula values(6,'Otras Pruebas', 2018,'Comedia',4,2);
+INSERT INTO pelicula values(7,'E.T',1982,'Ciencia Ficción',1,1);
+INSERT INTO pelicula values(8,'Pruebas Join', 2018,'Comedia',null,nul);
+
+
+select*from pelicula;

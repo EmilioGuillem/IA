@@ -1,0 +1,32 @@
+Calendar c1 = GregorianCalendar.getInstance();
+c1.set(2000,Calendar.AUGUST,31);
+
+
+
+DROP TABLE factura;
+CREATE TABLE factura(
+	IdFactura number(10)constraint invoid_id_pk primary key,
+    revisionNumber number(10) not null,
+	buyDate DATE NOT NULL,
+	subtotal number(20,2)
+    /*estate_id varchar2(10) not null, constraint estate_id_fk foreign key(estate_id)references estates(diccionary_id),--directamente hace referencia a otra tabla(hace función de FK)
+	seller_id number(3)not null, constraint seller_id_fk foreign key(seller_id)references sellers(seller_id),
+	shipping_method_id number(2)not null, constraint shipping_method_id_fk foreign key(shipping_method_id )references shipping_method(shipping_method_id ),
+	employee_id number(10)not null, constraint employee_id_fk foreign key(employee_id)references employees(employee_id)*/
+    );
+
+DELETE FROM factura;
+--INSERT INTO factura values(1,10,TO_TIMESTAMP('2018-10-25', 'YYYY-MM-DD'),10);
+INSERT INTO factura values(1,10,TO_DATE('25-10-2018', 'DD-MM-YYYY'),10);
+INSERT INTO factura values(2,15,TO_DATE('15-10-2018', 'DD-MM-YYYY'),20);
+INSERT INTO factura values(3,5,TO_DATE('05-10-2018', 'DD-MM-YYYY'),30);
+INSERT INTO factura values(4,20,TO_DATE('07-10-2018', 'DD-MM-YYYY'),40);
+INSERT INTO factura values(5,20,TO_DATE('07-10-2018', 'DD-MM-YYYY'),50);
+--pruebas
+INSERT INTO factura values(1,10,10);
+
+select * from global_name;
+
+select*from factura;
+
+desc factura;

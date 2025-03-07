@@ -1,0 +1,100 @@
+--CREACIÓN DE LAS TABLAS
+DROP TABLE invoid_detail;
+DROP TABLE invoid;
+DROP TABLE employees;
+DROP TABLE shipping_method;
+DROP TABLE products;
+DROP TABLE sellers;
+DROP TABLE estates;
+
+CREATE TABLE employees(
+	employee_id number(10)constraint employee_id_pk primary key,
+    	ename varchar2(40) not null,
+	elastname varchar2(40)
+    );
+
+CREATE TABLE shipping_method(
+	shipping_method_id number(10)constraint shipping_method_id_pk primary key,
+    	sname varchar2(40) not null
+    );
+
+
+CREATE TABLE products(
+	product_id number(10)constraint product_id_pk primary key,
+   	 pname varchar2(40) not null,
+	serial_number varchar2(100) unique not null
+    );
+
+
+CREATE TABLE sellers(
+	seller_id number(10)constraint seller_id_pk primary key,
+    	sname varchar2(40) not null,
+	account_number varchar2(100) unique not null
+    );
+
+CREATE TABLE estates(
+	diccionary_id varchar2(10)constraint diccionary_id_pk primary key,
+	descripcion varchar2(100) unique not null
+    );
+/*
+Debido a que la tabla facturas necesita de foreign key, creamos las tablas antes. Otra manera de hacerlo seria crear las tablas sin foreign key y utilizar el alte...add
+Se operará de la misma manera con la inserción de datos
+
+*/
+
+
+CREATE TABLE invoid(
+	invoid_id number(10)constraint invoid_id_pk primary key,
+    	revision_number number(10) not null,
+  	 -- estate varchar2(20)constraint estate check(estate is not null and estate in('Pendiente','Aprobado','Rechazado','Cancelado')) ,
+	buy_date TIMESTAMP NOT NULL,
+	subtotal number(20,2),
+    	estate_id varchar2(10) not null, constraint estate_id_fk foreign key(estate_id)references estates(diccionary_id),--directamente hace referencia a otra tabla(hace función de FK)
+	seller_id number(3)not null, constraint seller_id_fk foreign key(seller_id)references sellers(seller_id),
+	shipping_method_id number(2)not null, constraint shipping_method_id_fk foreign key(shipping_method_id )references shipping_method(shipping_method_id ),
+	employee_id number(10)not null, constraint employee_id_fk foreign key(employee_id)references employees(employee_id)
+    );
+
+
+CREATE TABLE invoid_detail(
+	invoid_detail_id number(10)constraint invoid_detail_id primary key,
+    	product_quantity number(10) not null,
+	payment_date TIMESTAMP NOT NULL,
+	unit_price number(6,2) not null,
+	subtotal number(20,2)not null,
+	invoid_id number(10)not null,constraint invoid_id_fk foreign key(invoid_id)references invoid(invoid_id),
+	product_id number(10)not null,constraint product_id_fk foreign key(product_id )references products(product_id)
+    );
+
+--CREACIÓN DE LAS SECUENCIAS PARA LOS AUTOINCREMENTALES
+
+drop sequence increment_invoice_details;--el schema "oe" nos lo podemos evitar si la sequencia se encuentra en la misma conexión de base de datos donde se crea.
+create sequence increment_invoice_details --crea un auto_increment de mysql para la tabla detalles de factura--
+MINVALUE 1
+increment by 1
+start with 1
+order;
+
+drop sequence increment_products;
+create sequence increment_products --crea un auto_increment de mysql para la tabla productos--
+MINVALUE 1
+increment by 1
+start with 1
+order;
+
+drop sequence increment_employees;
+create sequence increment_employees --crea un auto_increment de mysql para la tabla empleados--
+MINVALUE 1
+increment by 1
+start with 1
+order;
+
+
+--COMENTARIOS PARA LAS DIFERENTES TABLAS
+
+COMMENT ON COLUMN invoid.seller_id IS 'Error en la clave foranea seller_id';
+COMMENT ON COLUMN invoid.shipping_method_id IS 'Error en la clave foranea shipping_method_id';
+COMMENT ON COLUMN invoid.employee_id IS 'Error en la clave foranea employee_id';
+COMMENT ON COLUMN invoid.estate_id IS 'Error en la clave foranea estado_id';
+COMMENT ON COLUMN invoid_detail.invoid_id IS 'Error en la clave foranea invoid_id';
+COMMENT ON COLUMN invoid_detail.product_id IS 'Error en la clave foranea product_id';

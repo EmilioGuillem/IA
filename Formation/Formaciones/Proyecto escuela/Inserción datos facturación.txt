@@ -1,0 +1,114 @@
+--borrado de todas las tablas
+
+DELETE FROM invoid_detail;
+DELETE FROM invoid;
+DELETE FROM employees;
+DELETE FROM shipping_method;
+DELETE FROM products;
+DELETE FROM sellers;
+DELETE FROM estates;
+
+--borrado y creado de las secuencias de autoincrement
+
+drop sequence increment_invoid_details;--el schema "oe" nos lo podemos evitar si la sequencia se encuentra en la misma conexión de base de datos donde se crea.
+create sequence increment_invoid_details --crea un auto_increment de mysql para la tabla detalles de factura--
+--start with 1
+MINVALUE 0
+increment by 1
+order;
+
+drop sequence increment_products;
+create sequence increment_products --crea un auto_increment de mysql para la tabla productos--
+--start with 1
+MINVALUE 0
+increment by 1
+order;
+
+drop sequence increment_employees;
+create sequence increment_employees --crea un auto_increment de mysql para la tabla empleados--
+--start with 1
+MINVALUE 0
+increment by 1
+order;
+
+--INSERCIÓN DE DATOS EN LAS TABLAS
+
+--EMPLEADOS
+
+INSERT INTO employees values(increment_employees.nextval,'Emilio','Guillem');
+INSERT INTO employees values(increment_employees.nextval,'Patricia','Ruiz');
+INSERT INTO employees values(increment_employees.nextval,'Francisca','Gutiérrez');
+INSERT INTO employees values(increment_employees.nextval,'Pedro','Gomez');
+INSERT INTO employees values(increment_employees.nextval,'Lucas','Garcia');
+INSERT INTO employees values(increment_employees.nextval,'Pilar','Ruiz');
+INSERT INTO employees values(increment_employees.nextval,'Marta','Ruiz');
+INSERT INTO employees values(increment_employees.nextval,'Marcos','Gomez');
+INSERT INTO employees values(increment_employees.nextval,'Pablo','Escobar');
+INSERT INTO employees values(increment_employees.nextval,'Fernando','Simón');
+
+--VENDEDORES
+
+INSERT INTO sellers values(1,'Emilio','Simón');
+INSERT INTO sellers values(2,'Amador','Ribas');
+INSERT INTO sellers values(3,'Fernando','Esteso');
+INSERT INTO sellers values(4,'Maria','Santana');
+INSERT INTO sellers values(5,'Lucia','Guillem');
+
+
+--PRODUCTOS
+
+INSERT INTO products values(increment_products.nextval,'Teléfono','FCN01306413909');
+INSERT INTO products values(increment_products.nextval,'Mando','3CDM597099');
+INSERT INTO products values(increment_products.nextval,'Targeta Gráfica','29CG195052');
+INSERT INTO products values(increment_products.nextval,'Pantalla','A1LMTFQ57757');
+INSERT INTO products values(increment_products.nextval,'Placa Base','33ZG1211245');
+INSERT INTO products values(increment_products.nextval,'Armario','B4QSP0000001');
+INSERT INTO products values(increment_products.nextval,'Cables','B4QSP00051681');
+INSERT INTO products values(increment_products.nextval,'Móvil','55WG05584');
+INSERT INTO products values(increment_products.nextval,'Pendrive','22SR568897');
+INSERT INTO products values(increment_products.nextval,'Auriculares','55SR5F8857');
+INSERT INTO products values(increment_products.nextval,'Cascos','5AS85F8257');
+INSERT INTO products values(increment_products.nextval,'Portátil','41NP030691');
+INSERT INTO products values(increment_products.nextval,'Bicicleta','3CAP008364');
+INSERT INTO products values(increment_products.nextval,'Ruedas','5G3RTF9867');
+
+--SHIPPING_METHOD
+
+INSERT INTO shipping_method values(1,'PayPal');
+INSERT INTO shipping_method values(2,'ContraRembolso');
+INSERT INTO shipping_method values(3,'Cuenta Bancaria');
+
+--ESTADOS
+
+INSERT INTO estates values('Pendiente','La factura esta pendiente de pago');
+INSERT INTO estates values('Cancelada','La factura ha sido cancelada');
+INSERT INTO estates values('Aprobada','La factura ha sido aprobada');
+INSERT INTO estates values('Rechazada','La factura ha sido rechazada');
+
+
+--FACTURA
+
+INSERT INTO invoid values(1,10,'25-oct-2018',10,'Pendiente',2,1,8);
+INSERT INTO invoid values(2,15,'15-oct-2018',20,'Cancelada',1,1,3);
+INSERT INTO invoid values(3,5,'5-oct-2018',30,'Aprobada',2,3,1);
+INSERT INTO invoid values(4,20,'7-oct-2018',40,'Rechazada',2,2,6);
+
+
+--DETALLES DE FACTURA
+
+INSERT INTO invoid_detail values(increment_invoid_details.nextval,10,'26-oct-2018 14:10:35',52.3,5.23,1,7);
+INSERT INTO invoid_detail values(increment_invoid_details.nextval,10,'26-oct-2018 14:10:35',500.3,50.23,1,14);
+INSERT INTO invoid_detail values(increment_invoid_details.nextval,10,'26-oct-2018 14:00:35',2007.8,200.78,1,3);
+INSERT INTO invoid_detail values(increment_invoid_details.nextval,10,'16-oct-2018 9:10:50',999.7,99.97,2,4);
+INSERT INTO invoid_detail values(increment_invoid_details.nextval,10,'16-oct-2018 9:10:50',1859.5,185.95,2,8);
+INSERT INTO invoid_detail values(increment_invoid_details.nextval,10,'16-oct-2018 9:10:50',903.5,90.35,2,1);
+INSERT INTO invoid_detail values(increment_invoid_details.nextval,10,'6-oct-2018 17:30:45',65.8,6.58,3,2);
+INSERT INTO invoid_detail values(increment_invoid_details.nextval,10,'6-oct-2018 17:30:45',152.3,15.23,3,9);
+INSERT INTO invoid_detail values(increment_invoid_details.nextval,10,'6-oct-2018 17:30:45',554.3,55.43,3,6);
+INSERT INTO invoid_detail values(increment_invoid_details.nextval,10,'8-oct-2018 19:45:10',752.3,75.23,4,11);
+INSERT INTO invoid_detail values(increment_invoid_details.nextval,10,'8-oct-2018 19:45:10',2952.3,295.23,4,12);
+INSERT INTO invoid_detail values(increment_invoid_details.nextval,10,'8-oct-2018 19:45:10',2252.3,225.23,4,13);
+INSERT INTO invoid_detail values(increment_invoid_details.nextval,10,'1-nov-2018 22:10:35',752.3,75.23,2,11);
+INSERT INTO invoid_detail values(increment_invoid_details.nextval,10,'1-nov-2018 22:10:35',1252.3,125.23,3,8);
+INSERT INTO invoid_detail values(increment_invoid_details.nextval,10,'1-nov-2018 22:10:35',52.3,5.23,1,7);
+

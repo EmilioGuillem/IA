@@ -1,0 +1,9 @@
+Conexión base de datos Oracle
+
+<persistence-unit name="animal" transaction-type="RESOURCE_LOCAL">
+		<!--  <provider>javax.persistence.spi.PersistenceProvider</provider>-->
+		<class>com.JPAmanual.entidad.Animal</class>
+		<properties>
+			<property name="javax.persistence.jdbc.url" value="jdbc:oracle:thin:@localhost:1521:orcl"/>
+			<property name="javax.persistence.jdbc.user" value="hr"/>
+			<property name="javax.persistence.jdbc.pa
