@@ -20,13 +20,27 @@ def main():
     # Get the name of the current GPU
     print(torch.cuda.get_device_name(0)) #
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    torch.cuda.empty_cache()
+
+
 
     dataset_train, dataset_eval = load_dataset("json", data_files="C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\context_db\\context.json", split=['train[:80%]', 'train[80%:]'])
 
 
     # tokenizer = AutoTokenizer.from_pretrained("./orbital_llama32_1B/orbital", token="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")
-    tokenizer = AutoTokenizer.from_pretrained("meta-llama/Llama-3.2-1B", token="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")
+    tokenizer = AutoTokenizer.from_pretrained('C:\\Users\\Emilio\\Documents\\GitHub\\IA\\orbital_llama32_1B', token="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")
+
+    # while(True):
+    # model = AutoModelForCausalLM.from_pretrained("./orbital_llama32_1B/orbital", token="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", low_cpu_mem_usage=True, 
+    #                                              torch_dtype=torch.float16, device_map='auto')
+    model = AutoModelForCausalLM.from_pretrained('C:\\Users\\Emilio\\Documents\\GitHub\\IA\\orbital_llama32_1B', token="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", low_cpu_mem_usage=True, 
+                                                torch_dtype=torch.float16, device_map='auto') 
+    
     # "meta-llama/Llama-3.2-1B"
+    if tokenizer.pad_token is None:
+        tokenizer.add_special_tokens({'pad_token': '[PAD]'})
+        model.resize_token_embeddings(len(tokenizer))
+
     def tokenize_function(examples):
         tokenizer.pad_token = tokenizer.eos_token
         # tokenizer.add_special_tokens({'pad_token': '[PAD]'})
@@ -46,14 +60,6 @@ def main():
     
     data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm=False, mlm_probability=0.15)
 
-   
-
-    # while(True):
-    # model = AutoModelForCausalLM.from_pretrained("./orbital_llama32_1B/orbital", token="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", low_cpu_mem_usage=True, 
-    #                                              torch_dtype=torch.float16, device_map='auto')
-    model = AutoModelForCausalLM.from_pretrained("meta-llama/Llama-3.2-1B", token="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", low_cpu_mem_usage=True, 
-                                                torch_dtype=torch.float16, device_map='auto') 
-    
 
     training_args= TrainingArguments(
         output_dir="./orbital_llama32_1B",
@@ -100,8 +106,8 @@ def main():
 
     #save model
     # torch.save(state, './orbital_llama32_1B/orbital')
-    model.save_pretrained('C:\\Users\\Emilio\\Documents\\GitHub\\IA\\orbital_llama32_1B\\orbital')
-    tokenizer.save_pretrained('C:\\Users\\Emilio\\Documents\\GitHub\\IA\\orbital_llama32_1B\\orbital')
+    model.save_pretrained('C:\\Users\\Emilio\\Documents\\GitHub\\IA\\orbital_llama32_1B')
+    tokenizer.save_pretrained('C:\\Users\\Emilio\\Documents\\GitHub\\IA\\orbital_llama32_1B')
     
 
 if __name__ == "__main__":
