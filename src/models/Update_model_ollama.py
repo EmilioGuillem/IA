@@ -24,8 +24,8 @@ def main():
     dataset_train, dataset_eval = load_dataset("json", data_files="C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\context_db\\context.json", split=['train[:80%]', 'train[80%:]'])
 
 
+    # tokenizer = AutoTokenizer.from_pretrained("./orbital_llama32_1B/orbital", token="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")
     tokenizer = AutoTokenizer.from_pretrained("meta-llama/Llama-3.2-1B", token="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")
-    
     # "meta-llama/Llama-3.2-1B"
     def tokenize_function(examples):
         tokenizer.pad_token = tokenizer.eos_token
@@ -49,9 +49,10 @@ def main():
    
 
     # while(True):
+    # model = AutoModelForCausalLM.from_pretrained("./orbital_llama32_1B/orbital", token="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", low_cpu_mem_usage=True, 
+    #                                              torch_dtype=torch.float16, device_map='auto')
     model = AutoModelForCausalLM.from_pretrained("meta-llama/Llama-3.2-1B", token="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", low_cpu_mem_usage=True, 
-                                                 torch_dtype=torch.float16, device_map='auto')
-    
+                                                torch_dtype=torch.float16, device_map='auto') 
     
 
     training_args= TrainingArguments(
@@ -98,8 +99,9 @@ def main():
     trainer.train()
 
     #save model
-    model.save_pretrained('./orbital_llama32_1B/orbital')
-    tokenizer.save_pretrained('./orbital_llama32_1B/orbital')
+    # torch.save(state, './orbital_llama32_1B/orbital')
+    model.save_pretrained('C:\\Users\\Emilio\\Documents\\GitHub\\IA\\orbital_llama32_1B\\orbital')
+    tokenizer.save_pretrained('C:\\Users\\Emilio\\Documents\\GitHub\\IA\\orbital_llama32_1B\\orbital')
     
 
 if __name__ == "__main__":
