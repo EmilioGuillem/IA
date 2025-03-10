@@ -12,13 +12,17 @@
 # text = respuesta.choices[0].text.strip()
 # print(text)
 from pathlib import Path
-import Ollama_chat
+import model_chat
 
 
 def main():
 
-    newOllamaConnexion = Ollama_chat.OllamaChat()
+    # newOllamaConnexion = Ollama_chat.OllamaChat()
 
-    newOllamaConnexion.chat_with_ollama_history()
+    # newOllamaConnexion.chat_with_ollama_history()
+
+    newConnexion = model_chat.model_chat()
+    newConnexion.chat_with_ollama_history()
+
 if __name__ == "__main__":
     main()

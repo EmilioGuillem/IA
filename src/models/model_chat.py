@@ -1,47 +1,39 @@
-import requests
 import json
-import ollama
-
-from langchain_community.llms import Ollama
-from langchain.prompts import ChatPromptTemplate
-#import chainlit as cl
-
-from langchain.chains import conversation
 import os
 import datetime
 
 from pathlib import Path
+import torch
+from transformers import AutoTokenizer
+from transformers import AutoModelForCausalLM
 
-class OllamaChat:
+class model_chat:
     def __init__(self):
-            self.url = "http://localhost:11434/api/generate"
-            self.headers = {
-                "Content-Type" : "application/json"
-            }
-            self.data = {
-                "model": "mistral",
-                "prompt": "",
-                "stream":True
-            }
-            self.resultQuery = "{}"
-            # self.model = "llama3.2"
-            self.model = "orbital"
+            os.environ['CUDA_LAUNCH_BLOCKING']='1'
+            os.environ['TORCH_USE_CUDA_DSA'] = 'True'
             self.messages=""
             self.chat_history = []
             self.chat_history_txt =""
-            # self.context_db()
+            self.file_path_context_txt = Path("C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\context_db\\context_txt.txt")
+            self.file_path_context_json = Path("C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\context_db\\context.json")
+            
+            torch.inference_mode()
+            torch.cuda.empty_cache()
+            
+            self.tokenizer = AutoTokenizer.from_pretrained('C:\\Users\\Emilio\\Documents\\GitHub\\IA\\orbital_llama32_1B')
+# ,torch_dtype=torch.float16, device_map='auto') 
+            self.model = AutoModelForCausalLM.from_pretrained('C:\\Users\\Emilio\\Documents\\GitHub\\IA\\orbital_llama32_1B', device_map='auto')
+            self.tokenizer.pad_token = "[PAD]"
+            self.tokenizer.padding_side = "left"
+            self.messages = [
+                {"role": "system", "content": "Tu nombre es Orbital, un asistente virtual"},
+                {"role": "user", "content": "Buenos días, Orbital"}
+            ]
 
-    #Suprimir
-    # def getReponse(self, data:json):
-    #     response = requests.post(url=self.url, headers=self.headers, data=json.dumps(self.data))
-    #     if response.status_code==200:
-    #         response_text = response.text
-    #         data = json.loads(response_text)
-    #         actual_response = data["response"]
-    #         print(actual_response)
-    #         self.resultQuery = actual_response
-    #     else:
-    #         print("Error: ", response.status_code, response.text)
+            # set chat template
+            tokenized_chat = self.tokenizer.apply_chat_template(self.messages, tokenize=True, add_generation_prompt=True, return_tensors="pt")
+
+            self.chat_history_ids = self.context_db(self.file_path_context_json)
 
     def append_context(self, new_file_path:Path):
          if new_file_path.is_file():
@@ -51,10 +43,11 @@ class OllamaChat:
             # self.chat_history.append(content)
             self.chat_history_txt = content+"\n"+self.chat_history_txt
             print("Database TXT update successfully!")
+            return self.chat_history_txt
 
     def append_context_json(self, new_file_path:Path):
         if new_file_path.is_file():
-            with open(new_file_path, 'r') as json_file:
+            with open(new_file_path, 'r', encoding='utf-8') as json_file:
                 data = json.load(json_file)
 
             # Append new data
@@ -67,36 +60,47 @@ class OllamaChat:
                 json.dump(self.chat_history, file, indent=4)
 
             print("Database update successfully!")
+            return self.chat_history
 
 
-    def context_db(self):
-        #create context IA"
-        file_path = Path("C:\\Users\\Emilio Guillem\\Documents\\GIT\\IA\\src\\context_db\\context_text.txt")
-        file_path_json = Path("C:\\Users\\Emilio Guillem\\Documents\\GIT\\IA\\src\\context_db\\context.json")
-        # for file_path in folder_path.iterdir():
-        self.append_context(file_path)
-        self.append_context_json(file_path_json)
+    def context_db(self, path_chat_history:Path):
+        # Load the JSON file
+        if path_chat_history.is_file():
+            with open(path_chat_history, 'r', encoding='utf-8') as json_file:
+                context_data = json.load(json_file)
+        # Convert the JSON data to a string
+        context_string = json.dumps(context_data)   
+        self.chat_history_ids = self.tokenizer.encode(context_string+ self.tokenizer.eos_token, return_tensors="pt")
+        # Tokenize the context string
+        inputs = self.tokenizer(context_string, return_tensors='pt')
+        
+        inputs.to('cuda')
+        # Generate a response using the mode
+        return self.model.generate(inputs['input_ids'])
 
-        message_history = ({'role':'user', 'content':"Histórico de conversaciones anteriores: \n"+self.chat_history_txt})
-        message_history_json = self.chat_history
-        response = ollama.chat(
-            model = self.model,
-            messages=message_history,
-            options={
-                    'num_ctx': 4096,
-                    'temperature': 0.7,
-                    'repeat_penalty':1.2
-                },
+
+    def generate_reponse(self, text):
+        # encode the input and add end of string token
+        input_ids = self.tokenizer.encode(text + self.tokenizer.eos_token, return_tensors="pt")
+        # concatenate new user input with chat history (if there is)
+        bot_input_ids = torch.cat([self.chat_history_ids, input_ids], dim=-1) if self.chat_history_ids != None else input_ids
+        bot_input_ids = bot_input_ids.to('cuda')
+        # generate a bot response
+        self.chat_history_ids = self.model.generate(
+            bot_input_ids,
+            max_length=4096,
+            do_sample=True,
+            top_p=0.95,
+            top_k=0,
+            temperature=0.7,
+            pad_token_id=self.tokenizer.eos_token_id
         )
-        response_json = ollama.chat(
-            model = self.model,
-            messages=message_history_json,
-            options={
-                    'num_ctx': 4096,
-                    'temperature': 0.7,
-                    'repeat_penalty':1.2
-                },
-        )
+        #print the output
+        output = self.tokenizer.decode(self.chat_history_ids[:, bot_input_ids.shape[-1]:][0], skip_special_tokens=True)
+        print(f"Orbital : {output}")
+        return output
+        
+    
     def chat_with_ollama_history(self):
         # self.context_db()
         now = datetime.datetime.now()
@@ -109,12 +113,12 @@ class OllamaChat:
                 break;
             if user_input.lower().__contains__("base de datos") or user_input.lower().__contains__("database"):
                 if user_input.lower().__contains__("almacena") or user_input.lower().__contains__("insert") or user_input.lower().__contains__("guarda"):
-                    newFilePath = Path("C:\\Users\\Emilio Guillem\\Documents\\GIT\\IA\\src\\context_db\\context_txt.txt")
-                    newFilePath_json = Path("C:\\Users\\Emilio Guillem\\Documents\\GIT\\IA\\src\\context_db\\context.json")
+                    newFilePath = self.file_path_context_txt
+                    newFilePath_json = self.file_path_context_json
                     if os.path.exists(newFilePath):
-                        self.append_context(newFilePath)
+                        context_txt = self.append_context(newFilePath)
                     if os.path.exists(newFilePath_json):
-                        self.append_context_json(newFilePath_json)
+                        context_json = self.append_context_json(newFilePath_json)
                     else:
                         with open(newFilePath_json, 'w+') as file:
                             json.dump(self.chat_history, file, indent=4)
@@ -125,15 +129,7 @@ class OllamaChat:
                     newfile.close()
 
             self.chat_history.append({'role':'user', 'content':str(datetime.datetime.now().today().strftime("%d-%m-%Y %H:%M:%S")) + " - " + user_input})
-            response = ollama.chat(
-                model = self.model,
-                messages=self.chat_history,
-                options={
-                        'num_ctx': 4096,
-                        'temperature': 0.7,
-                        'repeat_penalty':1.2
-                    },
-            )
+            response = self.generate_reponse(user_input)
 
             # Add the response to the messages to maintain the history
             # self.chat_history.append(response['message'])
