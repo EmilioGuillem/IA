@@ -30,16 +30,16 @@ def main():
     )
 
 
-    dataset_train, dataset_eval = load_dataset("json", data_files="C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\context_db\\context.json", split=['train[:80%]', 'train[80%:]'])
+    dataset_train, dataset_eval = load_dataset("json", data_files="C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\context_db\\context.json",encoding='latin1',  split=['train[:80%]', 'train[80%:]'])
+    
 
-
-    # tokenizer = AutoTokenizer.from_pretrained("./orbital_llama32_1B/orbital", token="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")
-    tokenizer = AutoTokenizer.from_pretrained('C:\\Users\\Emilio\\Documents\\GitHub\\IA\\orbital_llama32_1B', token="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")
+    # tokenizer = AutoTokenizer.from_pretrained("meta-llama/Llama-3.2-3B-Instruct", token="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")
+    tokenizer = AutoTokenizer.from_pretrained('C:\\Users\\Emilio\\Documents\\GitHub\\IA\\TrainingTest_3B', token="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")
 
     # while(True):
-    # model = AutoModelForCausalLM.from_pretrained("./orbital_llama32_1B/orbital", token="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", low_cpu_mem_usage=True, 
-    #                                              torch_dtype=torch.float16, device_map='auto')
-    model = AutoModelForCausalLM.from_pretrained('C:\\Users\\Emilio\\Documents\\GitHub\\IA\\orbital_llama32_1B', token="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", low_cpu_mem_usage=True, 
+    # model = AutoModelForCausalLM.from_pretrained("meta-llama/Llama-3.2-3B-Instruct", token="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", low_cpu_mem_usage=True, 
+                                                #  torch_dtype=torch.float16, device_map='auto')
+    model = AutoModelForCausalLM.from_pretrained('C:\\Users\\Emilio\\Documents\\GitHub\\IA\\TrainingTest_3B', token="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", low_cpu_mem_usage=True, 
                                                 torch_dtype=torch.bfloat16, device_map='auto') 
     
     # "meta-llama/Llama-3.2-1B"
@@ -68,7 +68,7 @@ def main():
 
 
     training_args= TrainingArguments(
-        output_dir="./orbital_llama32_1B",
+        output_dir="./TrainingTest_3B",
         eval_strategy="steps",
         eval_steps=10,
         logging_steps=10,
@@ -83,9 +83,10 @@ def main():
         log_level="info",
         weight_decay=0.01,
         max_grad_norm=2,
+        optim = "adamw_8bit",
     )
 
-    trainer = Trainer(
+    trainer = SFTTrainer(
         model=model,
         args=training_args,
         train_dataset=train_tokenized_datasets,
@@ -99,9 +100,9 @@ def main():
     torch.inference_mode()
     torch.cuda.empty_cache()
     state  = model.state_dict()
-    torch.save(state, './orbital_llama32_1B/orbital')
+    torch.save(state, './TrainingTest_3B/orbital')
     # move the model parameter to cpu
-    state = torch.load('./orbital_llama32_1B/orbital', map_location=torch.device('cpu'))
+    state = torch.load('./TrainingTest_3B/orbital', map_location=torch.device('cpu'))
 
     model.load_state_dict(state)
 
@@ -112,9 +113,9 @@ def main():
     trainer.train()
 
     #save model
-    # torch.save(state, './orbital_llama32_1B/orbital')
-    model.save_pretrained('C:\\Users\\Emilio\\Documents\\GitHub\\IA\\orbital_llama32_1B')
-    tokenizer.save_pretrained('C:\\Users\\Emilio\\Documents\\GitHub\\IA\\orbital_llama32_1B')
+    # torch.save(state, './TrainingTest/orbital')
+    model.save_pretrained('C:\\Users\\Emilio\\Documents\\GitHub\\IA\\TrainingTest_3B')
+    tokenizer.save_pretrained('C:\\Users\\Emilio\\Documents\\GitHub\\IA\\TrainingTest_3B')
 
     #save gguf for ollama serve
 

@@ -4,8 +4,10 @@ import datetime
 
 from pathlib import Path
 import torch
+import logging
 from transformers import AutoTokenizer
 from transformers import AutoModelForCausalLM
+import transformers
 
 class model_chat:
     def __init__(self):
@@ -13,6 +15,7 @@ class model_chat:
             os.environ['TORCH_USE_CUDA_DSA'] = 'True'
             self.messages=""
             self.chat_history = []
+            self.chat_history_ids = None
             self.chat_history_txt =""
             self.file_path_context_txt = Path("C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\context_db\\context_txt.txt")
             self.file_path_context_json = Path("C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\context_db\\context.json")
@@ -20,20 +23,37 @@ class model_chat:
             torch.inference_mode()
             torch.cuda.empty_cache()
             
-            self.tokenizer = AutoTokenizer.from_pretrained('C:\\Users\\Emilio\\Documents\\GitHub\\IA\\orbital_llama32_1B')
+
+            self.tokenizer = AutoTokenizer.from_pretrained('C:\\Users\\Emilio\\Documents\\GitHub\\IA\\TrainingTest_3B')
 # ,torch_dtype=torch.float16, device_map='auto') 
-            self.model = AutoModelForCausalLM.from_pretrained('C:\\Users\\Emilio\\Documents\\GitHub\\IA\\orbital_llama32_1B', device_map='auto')
-            self.tokenizer.pad_token = "[PAD]"
-            self.tokenizer.padding_side = "left"
+            self.tokenizer.pad_token = self.tokenizer.eos_token
+            self.model = AutoModelForCausalLM.from_pretrained('C:\\Users\\Emilio\\Documents\\GitHub\\IA\\TrainingTest_3B',
+                                                              torch_dtype=torch.bfloat16, device_map='auto') 
+            # from transformers import set_seed
+            # set_seed(42)
+
+            self.model.float()
+            if self.tokenizer.pad_token is None:
+                self.tokenizer.pad_token = self.tokenizer.eos_token
+
             self.messages = [
                 {"role": "system", "content": "Tu nombre es Orbital, un asistente virtual"},
-                {"role": "user", "content": "Buenos días, Orbital"}
+                {"role": "user", "content": "Buenos días, Orbital"},
+                {"role": "assistant", "content": "Buenos días, mi nombre es Orbital"}
             ]
 
             # set chat template
-            tokenized_chat = self.tokenizer.apply_chat_template(self.messages, tokenize=True, add_generation_prompt=True, return_tensors="pt")
-
-            self.chat_history_ids = self.context_db(self.file_path_context_json)
+            tokenized_chat = self.tokenizer.apply_chat_template(self.messages, return_tensors="pt")
+            #set device GPU
+            self.device=torch.device('cuda',0)
+            self.context_db(self.file_path_context_json)
+            # self.pipeline = transformers.pipeline(
+            #     model=self.model,
+            #     tokenizer=self.tokenizer,
+            #     task='text-generation',
+            #     torch_dtype=torch.bfloat16,     
+            #     device_map='auto',
+            # )
 
     def append_context(self, new_file_path:Path):
          if new_file_path.is_file():
@@ -70,35 +90,60 @@ class model_chat:
                 context_data = json.load(json_file)
         # Convert the JSON data to a string
         context_string = json.dumps(context_data)   
-        self.chat_history_ids = self.tokenizer.encode(context_string+ self.tokenizer.eos_token, return_tensors="pt")
+        # self.chat_history_ids = self.tokenizer.encode(context_string+ self.tokenizer.eos_token, return_tensors="pt")
         # Tokenize the context string
-        inputs = self.tokenizer(context_string, return_tensors='pt')
+        inputs_id = self.tokenizer(context_string, return_tensors='pt')
         
-        inputs.to('cuda')
-        # Generate a response using the mode
-        return self.model.generate(inputs['input_ids'])
+        # self.chat_history_ids.to('cpu')
+        # # Generate a response using the mode
+        # # if torch.isnan(self.chat_history_ids['input_ids']).any() or torch.isinf(self.chat_history_ids['input_ids']).any():
+        # #     print("Found NaN or Inf")
+        # inputs_id = torch.cat([self.chat_history_ids, inputs['input_ids']], dim=-1) if self.chat_history_ids != None else inputs['input_ids']
+        output = self.chat_history_ids = self.model.generate(
+            inputs_id['input_ids'].to(self.device),
+            attention_mask=inputs_id['attention_mask'].to(self.device),
+            renormalize_logits=False,
+            se_cache=True,
+            max_length=100,
+        )
+        inputs_id = None;
+        # print(self.tokenizer.decode(output[0], skip_special_tokens=True))
+
 
 
     def generate_reponse(self, text):
         # encode the input and add end of string token
-        input_ids = self.tokenizer.encode(text + self.tokenizer.eos_token, return_tensors="pt")
+        # device=torch.device('cuda',0)
+        # input_ids = self.tokenizer.encode(text + self.tokenizer.eos_token, return_tensors="pt", padding=True)
+        input_ids = self.tokenizer(text+ self.tokenizer.eos_token, return_tensors="pt", padding=True)
         # concatenate new user input with chat history (if there is)
         bot_input_ids = torch.cat([self.chat_history_ids, input_ids], dim=-1) if self.chat_history_ids != None else input_ids
-        bot_input_ids = bot_input_ids.to('cuda')
+        bot_input_ids = bot_input_ids.to(self.device)
         # generate a bot response
+        # newOutput = self.pipeline.predict(text)
+        # print(newOutput)
         self.chat_history_ids = self.model.generate(
-            bot_input_ids,
-            max_length=4096,
+            input_ids=bot_input_ids['input_ids'].to(self.device),
+            attention_mask=bot_input_ids['attention_mask'].to(self.device),
+            # input_ids = bot_input_ids.to(device),
+            renormalize_logits=False,
+            use_cache=True,
+            # max_length=4096,
+            max_new_tokens=True,
             do_sample=True,
             top_p=0.95,
             top_k=0,
             temperature=0.7,
-            pad_token_id=self.tokenizer.eos_token_id
+            num_return_sequences=1,
+            pad_token_id=self.tokenizer.pad_token_id
         )
-        #print the output
-        output = self.tokenizer.decode(self.chat_history_ids[:, bot_input_ids.shape[-1]:][0], skip_special_tokens=True)
-        print(f"Orbital : {output}")
-        return output
+        # #print the output
+        # output = self.tokenizer.decode(self.chat_history_ids[0], skip_special_tokens=True)
+        # generator = self.pipeline
+        # output = generator(text, renormalize_logits=True, do_sample=True, use_cache=True, max_new_tokens=True, temperature=0.7)
+        output = self.tokenizer.batch_decode(self.chat_history_ids, skip_special_tokens=True)
+        # print(f"Orbital : {output[0].split("-")[3]}")
+        return output[0].split("-")[3]
         
     
     def chat_with_ollama_history(self):
@@ -133,6 +178,21 @@ class model_chat:
 
             # Add the response to the messages to maintain the history
             # self.chat_history.append(response['message'])
-            self.chat_history.append({'role':'assistant', 'content': str(datetime.datetime.now().today().strftime("%d-%m-%Y %H:%M:%S")) + " - " + response.message.content})
-            self.chat_history_txt += "User: "+user_input+"\n"+"Orbital: "+ str(datetime.datetime.now().today().strftime("%d-%m-%Y %H:%M:%S")) + " - " + response.message.content
-            print("Orbital: " + response.message.content + '\n')
+            # self.chat_history.append({'role':'assistant', 'content': str(datetime.datetime.now().today().strftime("%d-%m-%Y %H:%M:%S")) + " - " + response.message.content})
+            # self.chat_history_txt += "User: "+user_input+"\n"+"Orbital: "+ str(datetime.datetime.now().today().strftime("%d-%m-%Y %H:%M:%S")) + " - " + response.message.content
+            # print("Orbital: " + response.message.content + '\n')
+
+
+
+
+
+
+            
+
+
+            self.chat_history.append({'role':'assistant', 'content': str(datetime.datetime.now().today().strftime("%d-%m-%Y %H:%M:%S")) + " - " + 
+                                      response})
+            print("Orbital: " + response + '\n')
+
+
+            

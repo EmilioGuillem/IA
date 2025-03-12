@@ -2,7 +2,7 @@ import requests
 import json
 import ollama
 
-from langchain_community.llms import Ollama
+# from langchain_community.llms import Ollama
 from langchain.prompts import ChatPromptTemplate
 #import chainlit as cl
 
