@@ -68,7 +68,7 @@ def main():
 
 
     training_args= TrainingArguments(
-        output_dir="./TrainingTest_3B",
+        output_dir="./src/llm/llama32_orbital_chat_3B",
         eval_strategy="steps",
         eval_steps=10,
         logging_steps=10,
@@ -100,9 +100,9 @@ def main():
     torch.inference_mode()
     torch.cuda.empty_cache()
     state  = model.state_dict()
-    torch.save(state, './TrainingTest_3B/orbital')
+    torch.save(state, './src/llm/llama32_orbital_chat_3B')
     # move the model parameter to cpu
-    state = torch.load('./TrainingTest_3B/orbital', map_location=torch.device('cpu'))
+    state = torch.load('./src/llm/llama32_orbital_chat_3B', map_location=torch.device('cpu'))
 
     model.load_state_dict(state)
 
@@ -114,8 +114,8 @@ def main():
 
     #save model
     # torch.save(state, './TrainingTest/orbital')
-    model.save_pretrained('C:\\Users\\Emilio\\Documents\\GitHub\\IA\\TrainingTest_3B')
-    tokenizer.save_pretrained('C:\\Users\\Emilio\\Documents\\GitHub\\IA\\TrainingTest_3B')
+    model.save_pretrained('C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\llm\\llama32_orbital_chat_3B')
+    tokenizer.save_pretrained('C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\llm\\llama32_orbital_chat_3B')
 
     #save gguf for ollama serve
 
