@@ -2,6 +2,8 @@
 import numpy as np
 from datasets import load_dataset
 import os
+
+
 import torch
 from transformers import Trainer, TrainingArguments
 from sklearn.model_selection import train_test_split
@@ -13,8 +15,8 @@ from peft import PeftConfig, PeftModel
 from peft import LoraConfig
 
 def main():
-    path_to_save_model = 'C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\llm\\llama32_orbital_chat_3B'
-    path_to_hggf_model = 'C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\llm\\llama32_orbital_chat_3B'
+    path_to_save_model = 'C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\llm\\llama32_orbital_chat_3B_q4'
+    path_to_model = 'C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\llm\\llama32_orbital_chat_3B'
     # Check if CUDA is available
     print(torch.cuda.is_available()) # True if CUDA is available
 
@@ -26,17 +28,12 @@ def main():
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     torch.cuda.empty_cache()
 
-    bnb_config = BitsAndBytesConfig(
-        load_in_4bit=True,
-        bnb_4bit_quant_type="nf4",
-        bnb_4bit_compute_dtype=torch.bfloat16
-    )
     LLAMA_3_CHAT_TEMPLATE = (
     "{% for message in messages %}"
         "{% if message['role'] == 'system' %}"
             "{{ message['content'] }}"
         "{% elif message['role'] == 'user' %}"
-            "{{ '\n\nHuman: ' + message['content'] +  eos_token }}"
+            "{{ '\n\nUser: ' + message['content'] +  eos_token }}"
         "{% elif message['role'] == 'assistant' %}"
             "{{ '\n\nAssistant: '  + message['content'] +  eos_token  }}"
         "{% endif %}"
@@ -51,12 +48,30 @@ def main():
     
 
     # tokenizer = AutoTokenizer.from_pretrained("meta-llama/Llama-3.2-3B-Instruct", token="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")
-    tokenizer = AutoTokenizer.from_pretrained(path_to_hggf_model, token="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")
+    tokenizer = AutoTokenizer.from_pretrained(path_to_model, token="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")
     tokenizer.chat_template = LLAMA_3_CHAT_TEMPLATE
     
     # Model    
     torch_dtype = torch.bfloat16
     quant_storage_dtype = torch.bfloat16
+    training_args= TrainingArguments(
+        output_dir=path_to_save_model,
+        eval_strategy="steps",
+        eval_steps=10,
+        logging_steps=10,
+        save_steps=40,
+        learning_rate=2e-5,
+        # per_device_train_batch_size=2,
+        # per_device_eval_batch_size=2,
+        auto_find_batch_size=True,
+        num_train_epochs=1,
+        fp16=False,
+        bf16=True,
+        log_level="info",
+        weight_decay=0.01,
+        max_grad_norm=2,
+        optim = "adamw_8bit",
+    )
     
     quantization_config = BitsAndBytesConfig(
             load_in_4bit=True,
@@ -67,7 +82,7 @@ def main():
         )
     
     model = AutoModelForCausalLM.from_pretrained(
-        path_to_hggf_model,
+        path_to_model,
         quantization_config=quantization_config,
         low_cpu_mem_usage=True,
         device_map='auto',
@@ -95,7 +110,7 @@ def main():
         else:
             examples["content"] = str(examples["content"])
             
-        return tokenizer.apply_chat_template(examples['content'],  tokenize=False, padding='max_length', truncation=True, max_length=512)
+        return tokenizer(examples['content'], padding='max_length', truncation=True, max_length=512)
 
 
     train_tokenized_datasets = dataset_train.map(tokenize_function, batched=True)
@@ -121,40 +136,15 @@ def main():
     ################
     # Training
     ################
-    training_args= TrainingArguments(
-        output_dir=path_to_save_model,
-        eval_strategy="steps",
-        eval_steps=10,
-        logging_steps=10,
-        save_steps=40,
-        learning_rate=2e-5,
-        # per_device_train_batch_size=2,
-        # per_device_eval_batch_size=2,
-        auto_find_batch_size=True,
-        num_train_epochs=1,
-        fp16=False,
-        bf16=True,
-        log_level="info",
-        weight_decay=0.01,
-        max_grad_norm=2,
-        optim = "adamw_8bit",
-    )
     
     trainer = SFTTrainer(
         model=model,
         args=training_args,
         train_dataset=train_tokenized_datasets,
-        dataset_text_field="text",
         eval_dataset=eval_tokenized_datasets,
         peft_config=peft_config,
-        max_seq_length=512,
         data_collator=data_collator,
         tokenizer=tokenizer,
-        packing=True,
-        dataset_kwargs={
-            "add_special_tokens": False,  # We template with special tokens
-            "append_concat_token": False,  # No need to add additional separator token
-        },
     )
     if trainer.accelerator.is_main_process:
         trainer.model.print_trainable_parameters()
@@ -176,32 +166,26 @@ def main():
     
     #send to GPU
     
-    # with torch.no_grad():
-    torch.inference_mode()
-    torch.cuda.empty_cache()
+    # # with torch.no_grad():
+    # torch.inference_mode()
+    # torch.cuda.empty_cache()
     state  = model.state_dict()
-    # torch.save(state, path_to_save_model+'\\orbital')
-    # # move the model parameter to cpu
-    # state = torch.load(path_to_save_model+'\\orbital', map_location=torch.device('cpu'))
+    torch.save(state, path_to_save_model+'\\orbital')
+    # move the model parameter to cpu
+    state = torch.load(path_to_save_model+'\\orbital', map_location=torch.device('cpu'))
 
-    # torch.save(state, path_to_save_model+'\\audio_classifier')
-    # # move the model parameter to cpu
-    # state = torch.load(path_to_save_model+'\\audio_classifier', map_location=torch.device('cpu'))
+    # # torch.save(state, path_to_save_model+'\\audio_classifier')
+    # # # move the model parameter to cpu
+    # # state = torch.load(path_to_save_model+'\\audio_classifier', map_location=torch.device('cpu'))
 
-    # torch.save(state, path_to_save_model+'\\document_answering')
-    # # move the model parameter to cpu
-    # state = torch.load(path_to_save_model+'\\document_answering', map_location=torch.device('cpu'))
+    # # torch.save(state, path_to_save_model+'\\document_answering')
+    # # # move the model parameter to cpu
+    # # state = torch.load(path_to_save_model+'\\document_answering', map_location=torch.device('cpu'))
 
-    model.load_state_dict(state)
 
-    # now move the model parameter to a GPU device of your choice
-    model.to(device)
-    torch.cuda.empty_cache()
-    
-    trainer.train()
-
-    #save model
-    # torch.save(state, './TrainingTest/orbital')
+    # #save model
+    # # torch.save(state, './TrainingTest/orbital')
+    # model = model.merge_and_unload()
     model.save_pretrained(path_to_save_model)
     tokenizer.save_pretrained(path_to_save_model)
 
@@ -220,10 +204,10 @@ def main():
 
     # Feel free to adapt this script to better fit your needs. Happy fine-tuning!
     # import os
-    # os.environ['HF_TOKENIZER'] = "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"
-    # model.push_to_hub("Emiliogs/orbital", use_auth_token=os.getenv("HF_TOKEN"))
-    # tokenizer.push_to_hub("Emiliogs/orbital", use_auth_token=os.getenv("HF_TOKEN"))
-
+    os.environ['HF_TOKENIZER'] = "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"
+    model.push_to_hub("emiliogsAI/test", use_auth_token=os.getenv("HF_TOKENIZER"))
+    
+    tokenizer.push_to_hub("emiliogsAI/test", use_auth_token=os.getenv("HF_TOKENIZER"))
 
 if __name__ == "__main__":
     main()
