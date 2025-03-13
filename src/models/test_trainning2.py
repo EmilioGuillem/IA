@@ -10,6 +10,7 @@ from transformers import AutoModelForCausalLM
 from transformers import DataCollatorForLanguageModeling
 from trl import SFTTrainer
 from peft import PeftConfig, PeftModel
+from peft import LoraConfig
 
 def main():
     path_to_save_model = 'C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\llm\\llama32_orbital_chat_3B'
@@ -30,6 +31,20 @@ def main():
         bnb_4bit_quant_type="nf4",
         bnb_4bit_compute_dtype=torch.bfloat16
     )
+    LLAMA_3_CHAT_TEMPLATE = (
+    "{% for message in messages %}"
+        "{% if message['role'] == 'system' %}"
+            "{{ message['content'] }}"
+        "{% elif message['role'] == 'user' %}"
+            "{{ '\n\nHuman: ' + message['content'] +  eos_token }}"
+        "{% elif message['role'] == 'assistant' %}"
+            "{{ '\n\nAssistant: '  + message['content'] +  eos_token  }}"
+        "{% endif %}"
+    "{% endfor %}"
+    "{% if add_generation_prompt %}"
+    "{{ '\n\nAssistant: ' }}"
+    "{% endif %}"
+)
 
 
     dataset_train, dataset_eval = load_dataset("json", data_files="C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\context_db\\context.json",encoding='latin1',  split=['train[:80%]', 'train[80%:]'])
@@ -37,13 +52,34 @@ def main():
 
     # tokenizer = AutoTokenizer.from_pretrained("meta-llama/Llama-3.2-3B-Instruct", token="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")
     tokenizer = AutoTokenizer.from_pretrained(path_to_hggf_model, token="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")
-
-    # while(True):
-    # model = AutoModelForCausalLM.from_pretrained("meta-llama/Llama-3.2-3B-Instruct", token="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", low_cpu_mem_usage=True, 
-                                                #  torch_dtype=torch.float16, device_map='auto')
-    model = AutoModelForCausalLM.from_pretrained(path_to_hggf_model, token="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", low_cpu_mem_usage=True, 
-                                                torch_dtype=torch.bfloat16, device_map='auto') 
-    # model = PeftModel.from_pretrained(model, )
+    tokenizer.chat_template = LLAMA_3_CHAT_TEMPLATE
+    
+    # Model    
+    torch_dtype = torch.bfloat16
+    quant_storage_dtype = torch.bfloat16
+    
+    quantization_config = BitsAndBytesConfig(
+            load_in_4bit=True,
+            bnb_4bit_use_double_quant=True,
+            bnb_4bit_quant_type="nf4",
+            bnb_4bit_compute_dtype=torch_dtype,
+            bnb_4bit_quant_storage=quant_storage_dtype,
+        )
+    
+    model = AutoModelForCausalLM.from_pretrained(
+        path_to_hggf_model,
+        quantization_config=quantization_config,
+        low_cpu_mem_usage=True,
+        device_map='auto',
+        token="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",
+        attn_implementation="sdpa", # use sdpa, alternatively use "flash_attention_2"
+        torch_dtype=quant_storage_dtype,
+        use_cache=False if training_args.gradient_checkpointing else True,  # this is needed for gradient checkpointing
+    )
+    
+    if training_args.gradient_checkpointing:
+        model.gradient_checkpointing_enable()
+    
     # "meta-llama/Llama-3.2-1B"
     if tokenizer.pad_token is None:
         tokenizer.add_special_tokens({'pad_token': '[PAD]'})
@@ -59,7 +95,7 @@ def main():
         else:
             examples["content"] = str(examples["content"])
             
-        return tokenizer(examples['content'],  padding='max_length', truncation=True, max_length=512)
+        return tokenizer.apply_chat_template(examples['content'],  tokenize=False, padding='max_length', truncation=True, max_length=512)
 
 
     train_tokenized_datasets = dataset_train.map(tokenize_function, batched=True)
@@ -67,8 +103,24 @@ def main():
 
     
     data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm=False, mlm_probability=0.15)
+    ################
+    # PEFT
+    ################
 
+    # LoRA config based on QLoRA paper & Sebastian Raschka experiment
+    peft_config = LoraConfig(
+        lora_alpha=8,
+        lora_dropout=0.05,
+        r=16,
+        bias="none",
+        target_modules="all-linear",
+        task_type="CAUSAL_LM",
+        # modules_to_save = ["lm_head", "embed_tokens"] # add if you want to use the Llama 3 instruct template
+    )
 
+    ################
+    # Training
+    ################
     training_args= TrainingArguments(
         output_dir=path_to_save_model,
         eval_strategy="steps",
@@ -87,15 +139,41 @@ def main():
         max_grad_norm=2,
         optim = "adamw_8bit",
     )
-
+    
     trainer = SFTTrainer(
         model=model,
         args=training_args,
         train_dataset=train_tokenized_datasets,
+        dataset_text_field="text",
         eval_dataset=eval_tokenized_datasets,
+        peft_config=peft_config,
+        max_seq_length=512,
         data_collator=data_collator,
+        tokenizer=tokenizer,
+        packing=True,
+        dataset_kwargs={
+            "add_special_tokens": False,  # We template with special tokens
+            "append_concat_token": False,  # No need to add additional separator token
+        },
     )
-        
+    if trainer.accelerator.is_main_process:
+        trainer.model.print_trainable_parameters()
+
+    ##########################
+    # Train model
+    ##########################
+    checkpoint = None
+    if training_args.resume_from_checkpoint is not None:
+        checkpoint = training_args.resume_from_checkpoint
+    trainer.train(resume_from_checkpoint=checkpoint)
+
+    ##########################
+    # SAVE MODEL FOR SAGEMAKER
+    ##########################
+    if trainer.is_fsdp_enabled:
+        trainer.accelerator.state.fsdp_plugin.set_state_dict_type("FULL_STATE_DICT")
+    trainer.save_model()
+    
     #send to GPU
     
     # with torch.no_grad():
