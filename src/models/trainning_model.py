@@ -68,7 +68,7 @@ def main():
 
 
     training_args= TrainingArguments(
-        output_dir="./src/llm/llama32_orbital_chat_3B",
+        output_dir="./llm/llama32_orbital_chat_3B",
         eval_strategy="steps",
         eval_steps=10,
         logging_steps=10,
@@ -100,9 +100,9 @@ def main():
     torch.inference_mode()
     torch.cuda.empty_cache()
     state  = model.state_dict()
-    torch.save(state, './src/llm/llama32_orbital_chat_3B')
+    torch.save(state, './llm/llama32_orbital_chat_3B')
     # move the model parameter to cpu
-    state = torch.load('./src/llm/llama32_orbital_chat_3B', map_location=torch.device('cpu'))
+    state = torch.load('./llm/llama32_orbital_chat_3B', map_location=torch.device('cpu'))
 
     model.load_state_dict(state)
 
