@@ -19,16 +19,15 @@ class model_chat:
             self.chat_history_txt =""
             self.file_path_context_txt = Path("C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\context_db\\context_txt.txt")
             self.file_path_context_json = Path("C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\context_db\\context.json")
-            
+            self.path_to_model = 'C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\llm\\llama32_orbital_chat_3B'
             torch.inference_mode()
             torch.cuda.empty_cache()
             
 
-            self.tokenizer = AutoTokenizer.from_pretrained('C:\\Users\\Emilio\\Documents\\GitHub\\IA\\TrainingTest_3B')
+            self.tokenizer = AutoTokenizer.from_pretrained(self.path_to_model)
 # ,torch_dtype=torch.float16, device_map='auto') 
             self.tokenizer.pad_token = self.tokenizer.eos_token
-            self.model = AutoModelForCausalLM.from_pretrained('C:\\Users\\Emilio\\Documents\\GitHub\\IA\\TrainingTest_3B',
-                                                              torch_dtype=torch.bfloat16, device_map='auto') 
+            self.model = AutoModelForCausalLM.from_pretrained(self.path_to_model, torch_dtype=torch.bfloat16, device_map='auto') 
             # from transformers import set_seed
             # set_seed(42)
 
