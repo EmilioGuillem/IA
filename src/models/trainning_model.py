@@ -11,7 +11,7 @@ from transformers import DataCollatorForLanguageModeling
 from trl import SFTTrainer
 
 def main():
-
+    path_to_save_model = 'C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\llm\\llama32_orbital_chat_3B'
     # Check if CUDA is available
     print(torch.cuda.is_available()) # True if CUDA is available
 
@@ -68,7 +68,7 @@ def main():
 
 
     training_args= TrainingArguments(
-        output_dir="./llm/llama32_orbital_chat_3B",
+        output_dir=path_to_save_model,
         eval_strategy="steps",
         eval_steps=10,
         logging_steps=10,
@@ -100,9 +100,9 @@ def main():
     torch.inference_mode()
     torch.cuda.empty_cache()
     state  = model.state_dict()
-    torch.save(state, './llm/llama32_orbital_chat_3B')
+    torch.save(state, path_to_save_model)
     # move the model parameter to cpu
-    state = torch.load('./llm/llama32_orbital_chat_3B', map_location=torch.device('cpu'))
+    state = torch.load(path_to_save_model, map_location=torch.device('cpu'))
 
     model.load_state_dict(state)
 
@@ -114,8 +114,8 @@ def main():
 
     #save model
     # torch.save(state, './TrainingTest/orbital')
-    model.save_pretrained('C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\llm\\llama32_orbital_chat_3B')
-    tokenizer.save_pretrained('C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\llm\\llama32_orbital_chat_3B')
+    model.save_pretrained(path_to_save_model)
+    tokenizer.save_pretrained(path_to_save_model)
 
     #save gguf for ollama serve
 
