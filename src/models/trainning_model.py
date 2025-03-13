@@ -12,6 +12,7 @@ from trl import SFTTrainer
 
 def main():
     path_to_save_model = 'C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\llm\\llama32_orbital_chat_3B'
+    path_to_hggf_model = 'C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\llm\\llama32_orbital_chat_3B'
     # Check if CUDA is available
     print(torch.cuda.is_available()) # True if CUDA is available
 
@@ -34,12 +35,12 @@ def main():
     
 
     # tokenizer = AutoTokenizer.from_pretrained("meta-llama/Llama-3.2-3B-Instruct", token="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")
-    tokenizer = AutoTokenizer.from_pretrained(path_to_save_model, token="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")
+    tokenizer = AutoTokenizer.from_pretrained(path_to_hggf_model, token="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")
 
     # while(True):
     # model = AutoModelForCausalLM.from_pretrained("meta-llama/Llama-3.2-3B-Instruct", token="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", low_cpu_mem_usage=True, 
                                                 #  torch_dtype=torch.float16, device_map='auto')
-    model = AutoModelForCausalLM.from_pretrained(path_to_save_model, token="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", low_cpu_mem_usage=True, 
+    model = AutoModelForCausalLM.from_pretrained(path_to_hggf_model, token="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", low_cpu_mem_usage=True, 
                                                 torch_dtype=torch.bfloat16, device_map='auto') 
     
     # "meta-llama/Llama-3.2-1B"
@@ -100,9 +101,17 @@ def main():
     torch.inference_mode()
     torch.cuda.empty_cache()
     state  = model.state_dict()
-    torch.save(state, path_to_save_model+'\\orbital')
-    # move the model parameter to cpu
-    state = torch.load(path_to_save_model+'\\orbital', map_location=torch.device('cpu'))
+    # torch.save(state, path_to_save_model+'\\orbital')
+    # # move the model parameter to cpu
+    # state = torch.load(path_to_save_model+'\\orbital', map_location=torch.device('cpu'))
+
+    # torch.save(state, path_to_save_model+'\\audio_classifier')
+    # # move the model parameter to cpu
+    # state = torch.load(path_to_save_model+'\\audio_classifier', map_location=torch.device('cpu'))
+
+    # torch.save(state, path_to_save_model+'\\document_answering')
+    # # move the model parameter to cpu
+    # state = torch.load(path_to_save_model+'\\document_answering', map_location=torch.device('cpu'))
 
     model.load_state_dict(state)
 
@@ -118,6 +127,23 @@ def main():
     tokenizer.save_pretrained(path_to_save_model)
 
     #save gguf for ollama serve
+    # Step 3: Save the Fine-Tuned Model
+
+    # After training, you can save the fine-tuned model:
+
+    # model.save_pretrained("C:/Users/Emilio Guillem/Documents/GIT/IA/src/llm/fine_tuned_llama")
+    # tokenizer.save_pretrained("C:/Users/Emilio Guillem/Documents/GIT/IA/src/llm/fine_tuned_llama")
+
+    # Notes:
+    # Dataset: Replace "path_to_your_dataset" with the actual path or name of your dataset.
+    # Hyperparameters: Adjust the hyperparameters (e.g., learning rate, batch size, number of epochs) as needed for your specific use case.
+    # Hardware: Ensure you have the necessary hardware (e.g., GPU) to handle the fine-tuning process, especially for large models like LLaMA 3.2B.
+
+    # Feel free to adapt this script to better fit your needs. Happy fine-tuning!
+    # import os
+    # os.environ['HF_TOKENIZER'] = "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"
+    # model.push_to_hub("Emiliogs/orbital", use_auth_token=os.getenv("HF_TOKEN"))
+    # tokenizer.push_to_hub("Emiliogs/orbital", use_auth_token=os.getenv("HF_TOKEN"))
 
 
 if __name__ == "__main__":
