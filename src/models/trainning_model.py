@@ -34,12 +34,12 @@ def main():
     
 
     # tokenizer = AutoTokenizer.from_pretrained("meta-llama/Llama-3.2-3B-Instruct", token="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")
-    tokenizer = AutoTokenizer.from_pretrained('C:\\Users\\Emilio\\Documents\\GitHub\\IA\\TrainingTest_3B', token="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")
+    tokenizer = AutoTokenizer.from_pretrained(path_to_save_model, token="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")
 
     # while(True):
     # model = AutoModelForCausalLM.from_pretrained("meta-llama/Llama-3.2-3B-Instruct", token="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", low_cpu_mem_usage=True, 
                                                 #  torch_dtype=torch.float16, device_map='auto')
-    model = AutoModelForCausalLM.from_pretrained('C:\\Users\\Emilio\\Documents\\GitHub\\IA\\TrainingTest_3B', token="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", low_cpu_mem_usage=True, 
+    model = AutoModelForCausalLM.from_pretrained(path_to_save_model, token="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", low_cpu_mem_usage=True, 
                                                 torch_dtype=torch.bfloat16, device_map='auto') 
     
     # "meta-llama/Llama-3.2-1B"
@@ -100,9 +100,9 @@ def main():
     torch.inference_mode()
     torch.cuda.empty_cache()
     state  = model.state_dict()
-    torch.save(state, path_to_save_model)
+    torch.save(state, path_to_save_model+'\\orbital')
     # move the model parameter to cpu
-    state = torch.load(path_to_save_model, map_location=torch.device('cpu'))
+    state = torch.load(path_to_save_model+'\\orbital', map_location=torch.device('cpu'))
 
     model.load_state_dict(state)
 
