@@ -9,6 +9,7 @@ from transformers import AutoTokenizer, BitsAndBytesConfig
 from transformers import AutoModelForCausalLM
 from transformers import DataCollatorForLanguageModeling
 from trl import SFTTrainer
+from peft import PeftConfig, PeftModel
 
 def main():
     path_to_save_model = 'C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\llm\\llama32_orbital_chat_3B'
@@ -42,7 +43,7 @@ def main():
                                                 #  torch_dtype=torch.float16, device_map='auto')
     model = AutoModelForCausalLM.from_pretrained(path_to_hggf_model, token="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", low_cpu_mem_usage=True, 
                                                 torch_dtype=torch.bfloat16, device_map='auto') 
-    
+    # model = PeftModel.from_pretrained(model, )
     # "meta-llama/Llama-3.2-1B"
     if tokenizer.pad_token is None:
         tokenizer.add_special_tokens({'pad_token': '[PAD]'})
