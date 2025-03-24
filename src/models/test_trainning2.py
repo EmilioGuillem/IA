@@ -13,6 +13,7 @@ from transformers import DataCollatorForLanguageModeling
 from trl import SFTTrainer
 from peft import PeftConfig, PeftModel, AutoPeftModelForCausalLM
 from peft import LoraConfig
+import datetime
 
 def main():
     # path_to_save_model = 'C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\llm\\llama31_orbital_chat_8B_q4'
@@ -51,22 +52,22 @@ def main():
 #     "{{ '\n\nAssistant: ' }}"
 #     "{% endif %}"
 # )
-
+    now = str(datetime.datetime.now().today().strftime("%d-%m-%Y %H:%M:%S"))
     LLAMA_3_CHAT_TEMPLATE= (
     {
       "role": "system",
       "content": "Tu nombre es Orbital, un asistente virtual",
-      "timestamp": "2025-03-14T12:34:56Z"
+      "timestamp": "{now}"
     },
     {
       "role": "user",
       "content": "Hola, Orbital",
-      "timestamp": "2025-03-14T12:35:00Z"
+      "timestamp": "{now}"
     },
     {
       "role": "assistant",
       "content": "Hola, mi nombre es Orbital, un asistente virtual listo para ayudarte.",
-      "timestamp": "2025-03-14T12:35:05Z"
+      "timestamp": "{now}"
     }
     )
 
