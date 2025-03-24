@@ -9,6 +9,7 @@ from langchain.prompts import ChatPromptTemplate
 from langchain.chains import conversation
 import os
 import datetime
+from collections import deque
 
 from pathlib import Path
 
@@ -54,27 +55,28 @@ class OllamaChat:
 
     def append_context_json(self, new_file_path:Path):
         if new_file_path.is_file():
-            with open(new_file_path, 'r') as json_file:
+            with open(new_file_path, 'r', encoding='latin1') as json_file:
                 data = json.load(json_file)
 
             # Append new data
             # self.chat_history.append(data['content'])
+            # data.append(self.chat_history)
+            # data = deque(data)
             data.append(self.chat_history)
-            self.chat_history = data
 
             # Write updated data back to the file
-            with open(new_file_path, 'w+') as file:
-                json.dump(self.chat_history, file, indent=4)
+            with open(new_file_path, 'w+', encoding='latin1') as file:
+                json.dump(data, file, indent=4)
 
             print("Database update successfully!")
 
 
     def context_db(self):
         #create context IA"
-        file_path = Path("C:\\Users\\Emilio Guillem\\Documents\\GIT\\IA\\src\\context_db\\context_text.txt")
-        file_path_json = Path("C:\\Users\\Emilio Guillem\\Documents\\GIT\\IA\\src\\context_db\\context.json")
+        # file_path = Path("C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\context_db\\context_txt.txt")
+        file_path_json = Path("C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\context_db\\context_v1.json")
         # for file_path in folder_path.iterdir():
-        self.append_context(file_path)
+        # self.append_context(file_path)
         self.append_context_json(file_path_json)
 
         message_history = ({'role':'user', 'content':"Histórico de conversaciones anteriores: \n"+self.chat_history_txt})
@@ -103,28 +105,11 @@ class OllamaChat:
         var_continue = True
         while var_continue:
             user_input = input('User: ')
-            user_input = str(datetime.datetime.now().today().strftime("%d-%m-%Y %H:%M:%S")) + " - " + user_input
-            if user_input.lower().__contains__("Orbital, apaga") or user_input.lower().__contains__("stop conversation") or user_input.lower().__contains__("finaliza conversacion")or user_input.lower().__contains__("finaliza conversación"):
+            if user_input.lower().__contains__("Orbital, apaga") or user_input.lower().__contains__("stop conversation") or user_input.lower().__contains__("finaliza conversacion")or user_input.lower().__contains__("finaliza connversación")or user_input.lower().__contains__("exit"):
                 var_continue= False;
                 break;
-            if user_input.lower().__contains__("base de datos") or user_input.lower().__contains__("database"):
-                if user_input.lower().__contains__("almacena") or user_input.lower().__contains__("insert") or user_input.lower().__contains__("guarda"):
-                    newFilePath = Path("C:\\Users\\Emilio Guillem\\Documents\\GIT\\IA\\src\\context_db\\context_txt.txt")
-                    newFilePath_json = Path("C:\\Users\\Emilio Guillem\\Documents\\GIT\\IA\\src\\context_db\\context.json")
-                    if os.path.exists(newFilePath):
-                        self.append_context(newFilePath)
-                    if os.path.exists(newFilePath_json):
-                        self.append_context_json(newFilePath_json)
-                    else:
-                        with open(newFilePath_json, 'w') as file:
-                            json.dump(self.chat_history, file, indent=4)
-                    
 
-                    newfile  = open(newFilePath, "w+")
-                    newfile.write(self.chat_history_txt)
-                    newfile.close()
-
-            self.chat_history.append({'role':'user', 'content':user_input})
+            self.chat_history.append({'role':'user', 'content':str(user_input), "timestamp": str(datetime.datetime.now().today().strftime("%d-%m-%Y %H:%M:%S"))})
             response = ollama.chat(
                 model = self.model,
                 messages=self.chat_history,
@@ -137,6 +122,23 @@ class OllamaChat:
 
             # Add the response to the messages to maintain the history
             # self.chat_history.append(response['message'])
-            self.chat_history.append({'role':'assistant', 'content': str(datetime.datetime.now().today().strftime("%d-%m-%Y %H:%M:%S")) + " - " + response.message.content})
-            self.chat_history_txt += "User: "+user_input+"\n"+"Orbital: "+ str(datetime.datetime.now().today().strftime("%d-%m-%Y %H:%M:%S")) + " - " + response.message.content+"\n"
+            self.chat_history.append({'role':'assistant', 'content': str(response.message.content), "timestamp": str(datetime.datetime.now().today().strftime("%d-%m-%Y %H:%M:%S"))})
+            # self.chat_history_txt += "User: "+user_input+"\n"+"Orbital: "+ response.message.content+"\n"
             print("Orbital: " + response.message.content + '\n')
+
+            if user_input.lower().__contains__("base de datos") or user_input.lower().__contains__("database"):
+                if user_input.lower().__contains__("almacena") or user_input.lower().__contains__("insert") or user_input.lower().__contains__("guarda"):
+                    # newFilePath = Path("C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\context_db\\context_txt.txt")
+                    newFilePath_json = Path("C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\context_db\\context_v1.json")
+                    # if os.path.exists(newFilePath):
+                    #     self.append_context(newFilePath)
+                    if os.path.exists(newFilePath_json):
+                        self.append_context_json(newFilePath_json)
+                    else:
+                        with open(newFilePath_json, 'w', encoding='latin1') as file:
+                            json.dump(self.chat_history, file, indent=4)
+                    
+
+                    # newfile  = open(newFilePath, "w+")
+                    # newfile.write(self.chat_history_txt)
+                    # newfile.close()

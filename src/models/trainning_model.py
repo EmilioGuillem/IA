@@ -60,6 +60,7 @@ def main():
             examples["content"] = str(examples["content"])
             
         return tokenizer(examples['content'],  padding='max_length', truncation=True, max_length=512)
+        # return tokenizer(examples['content'],  padding='max_length', truncation=True)
 
 
     train_tokenized_datasets = dataset_train.map(tokenize_function, batched=True)

@@ -11,12 +11,21 @@ from transformers import AutoTokenizer, BitsAndBytesConfig
 from transformers import AutoModelForCausalLM
 from transformers import DataCollatorForLanguageModeling
 from trl import SFTTrainer
-from peft import PeftConfig, PeftModel
+from peft import PeftConfig, PeftModel, AutoPeftModelForCausalLM
 from peft import LoraConfig
 
 def main():
+    # path_to_save_model = 'C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\llm\\llama31_orbital_chat_8B_q4'
+    # path_to_model = 'meta-llama/Llama-3.3-70B-Instruct'
+    # path_to_save_model = 'C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\llm\\llama31_orbital_chat_8B_q4_v1'
+    # path_to_model = 'meta-llama/Llama-3.1-8B-Instruct'
     path_to_save_model = 'C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\llm\\llama32_orbital_chat_3B_q4'
-    path_to_model = 'C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\llm\\llama32_orbital_chat_3B'
+    path_to_model = 'meta-llama/Llama-3.2-3B-Instruct'
+    # path_to_model = 'meta-llama/Llama-3.3-70B-Instruct-evals'
+    # path_to_model = 'meta-llama/Llama-3.2-11B-Vision-Instruct'
+    # minlik/docllm-yi-34b #document understanding
+    # JinghuiLuAstronaut/DocLLM_baichuan2_7b
+    # SantiagoPG/DOC_QA
     # Check if CUDA is available
     print(torch.cuda.is_available()) # True if CUDA is available
 
@@ -28,23 +37,41 @@ def main():
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     torch.cuda.empty_cache()
 
-    LLAMA_3_CHAT_TEMPLATE = (
-    "{% for message in messages %}"
-        "{% if message['role'] == 'system' %}"
-            "{{ message['content'] }}"
-        "{% elif message['role'] == 'user' %}"
-            "{{ '\n\nUser: ' + message['content'] +  eos_token }}"
-        "{% elif message['role'] == 'assistant' %}"
-            "{{ '\n\nAssistant: '  + message['content'] +  eos_token  }}"
-        "{% endif %}"
-    "{% endfor %}"
-    "{% if add_generation_prompt %}"
-    "{{ '\n\nAssistant: ' }}"
-    "{% endif %}"
-)
+#     LLAMA_3_CHAT_TEMPLATE = (
+#     "{% for message in messages %}"
+#         "{% if message['role'] == 'system' %}"
+#             "{{ message['content'] }}"
+#         "{% elif message['role'] == 'user' %}"
+#             "{{ '\n\nUser: ' + message['content'] +  eos_token }}"
+#         "{% elif message['role'] == 'assistant' %}"
+#             "{{ '\n\nAssistant: '  + message['content'] +  eos_token  }}"
+#         "{% endif %}"
+#     "{% endfor %}"
+#     "{% if add_generation_prompt %}"
+#     "{{ '\n\nAssistant: ' }}"
+#     "{% endif %}"
+# )
+
+    LLAMA_3_CHAT_TEMPLATE= (
+    {
+      "role": "system",
+      "content": "Tu nombre es Orbital, un asistente virtual",
+      "timestamp": "2025-03-14T12:34:56Z"
+    },
+    {
+      "role": "user",
+      "content": "Hola, Orbital",
+      "timestamp": "2025-03-14T12:35:00Z"
+    },
+    {
+      "role": "assistant",
+      "content": "Hola, mi nombre es Orbital, un asistente virtual listo para ayudarte.",
+      "timestamp": "2025-03-14T12:35:05Z"
+    }
+    )
 
 
-    dataset_train, dataset_eval = load_dataset("json", data_files="C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\context_db\\context.json",encoding='latin1',  split=['train[:80%]', 'train[80%:]'])
+    dataset_train, dataset_eval = load_dataset("json", data_files="C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\context_db\\context_v1.json",encoding='latin1',  split=['train[:80%]', 'train[80%:]'])
     
 
     # tokenizer = AutoTokenizer.from_pretrained("meta-llama/Llama-3.2-3B-Instruct", token="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")
@@ -92,6 +119,7 @@ def main():
         use_cache=False if training_args.gradient_checkpointing else True,  # this is needed for gradient checkpointing
     )
     
+    
     if training_args.gradient_checkpointing:
         model.gradient_checkpointing_enable()
     
@@ -130,9 +158,14 @@ def main():
         bias="none",
         target_modules="all-linear",
         task_type="CAUSAL_LM",
-        # modules_to_save = ["lm_head", "embed_tokens"] # add if you want to use the Llama 3 instruct template
+        modules_to_save = ["lm_head", "embed_tokens"] # add if you want to use the Llama 3 instruct template
     )
+    
+    model.add_adapter(peft_config)
 
+    # model = AutoPeftModelForCausalLM.from_pretrained(model.state_dict(), 
+    #                                                  low_cpu_mem_usage = True, torch_dtype=torch.bfloat16, peft_config=peft_config, device = 'auto')
+    # model.merge_and_unload()
     ################
     # Training
     ################
@@ -185,7 +218,8 @@ def main():
 
     # #save model
     # # torch.save(state, './TrainingTest/orbital')
-    # model = model.merge_and_unload()
+    # model = AutoPeftModelForCausalLM.from_pretrained(path_to_save_model, low_cpu_mem_usage = True, torch_dtype=torch.bfloat16, peft_config=peft_config)
+    # model.merge_and_unload()
     model.save_pretrained(path_to_save_model)
     tokenizer.save_pretrained(path_to_save_model)
 
@@ -205,9 +239,12 @@ def main():
     # Feel free to adapt this script to better fit your needs. Happy fine-tuning!
     # import os
     os.environ['HF_TOKENIZER'] = "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"
-    model.push_to_hub("emiliogsAI/test", use_auth_token=os.getenv("HF_TOKENIZER"))
+    model.push_to_hub("emiliogsAI/test2", use_auth_token=os.getenv("HF_TOKENIZER"))
     
-    tokenizer.push_to_hub("emiliogsAI/test", use_auth_token=os.getenv("HF_TOKENIZER"))
+    tokenizer.push_to_hub("emiliogsAI/test2", use_auth_token=os.getenv("HF_TOKENIZER"))
+
+    # model.save_pretrained(path_to_save_model, safe_serialization=True, max_shard_size='3GB')
+    # tokenizer.save_pretrained(path_to_save_model)
 
 if __name__ == "__main__":
     main()
