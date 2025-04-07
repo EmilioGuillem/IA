@@ -9,7 +9,7 @@
 
 # respuesta = openai.Completion.create(engine=modelo, prompt=prompt, n=1)
 
-# text = respuesta.choices[0].text.strip()
+# text = respuesta.choices[0].text.strip()B
 # print(text)
 from pathlib import Path
 import model_chat

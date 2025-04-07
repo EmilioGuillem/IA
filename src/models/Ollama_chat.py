@@ -4,6 +4,7 @@ import ollama
 
 # from langchain_community.llms import Ollama
 from langchain.prompts import ChatPromptTemplate
+from langchain_community.adapters.openai import convert_dict_to_message
 #import chainlit as cl
 
 from langchain.chains import conversation
@@ -30,7 +31,7 @@ class OllamaChat:
             self.messages=""
             self.chat_history = []
             self.chat_history_txt =""
-            # self.context_db()
+            self.context_db()
 
     #Suprimir
     # def getReponse(self, data:json):
@@ -55,44 +56,54 @@ class OllamaChat:
 
     def append_context_json(self, new_file_path:Path):
         if new_file_path.is_file():
-            with open(new_file_path, 'r', encoding='latin1') as json_file:
-                data = json.load(json_file)
+            # with open(new_file_path, 'r', encoding='latin1') as json_file:
+            #     data = json.load(json_file)
 
-            # Append new data
-            # self.chat_history.append(data['content'])
+            # # Append new data
+            # # self.chat_history.append(data['content'])
+            # # data.append(self.chat_history)
+            # # data = deque(data)
             # data.append(self.chat_history)
-            # data = deque(data)
-            data.append(self.chat_history)
 
             # Write updated data back to the file
-            with open(new_file_path, 'w+', encoding='latin1') as file:
-                json.dump(data, file, indent=4)
+            with open(new_file_path, 'w', encoding='latin1') as file:
+                file.write("")
+                json.dump(self.chat_history, file, indent=4)
 
             print("Database update successfully!")
+            # return data
 
 
     def context_db(self):
         #create context IA"
+        # message_history_json = []
         # file_path = Path("C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\context_db\\context_txt.txt")
         file_path_json = Path("C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\context_db\\context_v1.json")
         # for file_path in folder_path.iterdir():
-        # self.append_context(file_path)
-        self.append_context_json(file_path_json)
-
-        message_history = ({'role':'user', 'content':"Histórico de conversaciones anteriores: \n"+self.chat_history_txt})
-        message_history_json = self.chat_history
-        response = ollama.chat(
+        with open(file_path_json, 'r', encoding='latin1') as json_file:
+                data = json.load(json_file)
+        
+        # self.chat_history.append({'role':'user', 'content':'Aquí tienes el histórico de conversaciones anteriores', "timestamp": str(datetime.datetime.now().today().strftime("%d-%m-%Y %H:%M:%S"))})
+        
+        for message in data:
+            # if len(message)>0:
+            #     if len(message)>1:
+            #         for newmess in message:
+            #             self.chat_history.append(newmess)
+            self.chat_history.append(message)
+        
+        # response = ollama.chat(
+        #     model = self.model,
+        #     messages=message_history,
+        #     options={
+        #             'num_ctx': 4096,
+        #             'temperature': 0.7,
+        #             'repeat_penalty':1.2
+        #         },
+        # )
+        reponse = ollama.chat(
             model = self.model,
-            messages=message_history,
-            options={
-                    'num_ctx': 4096,
-                    'temperature': 0.7,
-                    'repeat_penalty':1.2
-                },
-        )
-        response_json = ollama.chat(
-            model = self.model,
-            messages=message_history_json,
+            messages=self.chat_history,
             options={
                     'num_ctx': 4096,
                     'temperature': 0.7,
