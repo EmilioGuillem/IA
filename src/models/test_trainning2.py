@@ -22,8 +22,48 @@ def main():
     # path_to_model = 'meta-llama/Llama-3.1-8B-Instruct'
     path_to_save_model = 'C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\llm\\llama32_orbital_chat_3B_q4'
     path_to_model = 'meta-llama/Llama-3.2-3B-Instruct'
+    
+    #----------------LLAMA 4 -------------------------------------------
+    # path_to_save_model = 'C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\llm\\llama4_orbital_chat_17B_128E_q4'
+    # path_to_model = 'meta-llama/Llama-4-Maverick-17B-128E-Instruct'
+    
+    # path_to_save_model = 'C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\llm\\llama4_orbital_chat_17B_16E_q4'
+    # path_to_model = 'meta-llama/Llama-4-Scout-17B-16E-Instruct'
+    
+     # path_to_save_model = 'C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\llm\\llama4_orbital_chat_17B_128E_FP8_q4'
+    # path_to_model = 'meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8'
+    
+    
+    #MODELOS QUANTIZADOS
+    # path_to_save_model = 'C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\llm\\llama4_orbital_chat_17B_16E_8bit_q4'
+    # path_to_model = 'unsloth/Llama-4-Scout-17B-16E-Instruct-unsloth-bnb-8bit'
+    
+    # path_to_save_model = 'C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\llm\\llama4_orbital_chat_17B_16E_4bit_q4'
+    # path_to_model = 'unsloth/Llama-4-Scout-17B-16E-Instruct-unsloth-bnb-4bit'
+    
+    # path_to_save_model = 'C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\llm\\llama4_orbital_chat_17B_16E_q4_Instruct'
+    # path_to_model = 'unsloth/Llama-4-Scout-17B-16E-Instruct'
+    
+    # path_to_save_model = 'C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\llm\\llama4_orbital_chat_17B_128E_q4_Instruct'
+    # path_to_model = 'unsloth/Llama-4-Maverick-17B-128E-Instruct'
+    
+    # path_to_save_model = 'C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\llm\\llama4_orbital_chat_17B_128E_q4_Instruct_FP8'
+    # path_to_model = 'unsloth/Llama-4-Maverick-17B-128E-Instruct-FP8'
+    
+    # path_to_save_model = 'C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\llm\\llama4_orbital_chat_17B_16E_q4_4bit'
+    # path_to_model = 'mlx-community/Llama-4-Maverick-17B-16E-Instruct-4bit'
+    
+    # path_to_save_model = 'C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\llm\\llama4_orbital_chat_17B_16E_q4_6bit'
+    # path_to_model = 'mlx-community/Llama-4-Maverick-17B-16E-Instruct-6bit'
+    
+    #download for ollama
+    # lmstudio-community/Llama-4-Scout-17B-16E-Instruct-GGUF
+    
+    #--------------NO FUNCIONAN, POCA RAM EN CPU-------------------------
     # path_to_model = 'meta-llama/Llama-3.3-70B-Instruct-evals'
     # path_to_model = 'meta-llama/Llama-3.2-11B-Vision-Instruct'
+    #--------------------------------------------------------------------
+    
     # minlik/docllm-yi-34b #document understanding
     # JinghuiLuAstronaut/DocLLM_baichuan2_7b
     # SantiagoPG/DOC_QA
