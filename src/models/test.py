@@ -14,16 +14,17 @@
 from pathlib import Path
 import model_chat
 import Ollama_chat
+import LMStudio_chat
 
 
 def main():
 
-    newOllamaConnexion = Ollama_chat.OllamaChat()
+    # newOllamaConnexion = Ollama_chat.OllamaChat()
 
-    newOllamaConnexion.chat_with_ollama_history()
+    # newOllamaConnexion.chat_with_ollama_history()
 
-    # newConnexion = model_chat.model_chat()
-    # newConnexion.chat_with_ollama_history()
+    newConnexion = LMStudio_chat.LMChat()
+    newConnexion.chat_with_lmstudio_history()
 
 if __name__ == "__main__":
     main()

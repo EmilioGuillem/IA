@@ -7,7 +7,7 @@ import os
 import torch
 from transformers import Trainer, TrainingArguments
 from sklearn.model_selection import train_test_split
-from transformers import AutoTokenizer, BitsAndBytesConfig
+from transformers import AutoTokenizer, BitsAndBytesConfig, AutoConfig
 from transformers import AutoModelForCausalLM
 from transformers import DataCollatorForLanguageModeling
 from trl import SFTTrainer
@@ -20,40 +20,31 @@ def main():
     # path_to_model = 'meta-llama/Llama-3.3-70B-Instruct'
     # path_to_save_model = 'C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\llm\\llama31_orbital_chat_8B_q4_v1'
     # path_to_model = 'meta-llama/Llama-3.1-8B-Instruct'
+
+    # #---------------------ACTUAL------------------------------------------------
     path_to_save_model = 'C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\llm\\llama32_orbital_chat_3B_q4'
     path_to_model = 'meta-llama/Llama-3.2-3B-Instruct'
+    # path_to_save_model = 'C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\llm\\llama4_SCOUT_orbital_chat_17B_16E'
+    # path_to_model = 'meta-llama/Llama-4-Scout-17B-16E-Instruct'
+    # path_to_model = 'C:\\Users\\Emilio\\.cache\\huggingface\\hub\\models--meta-llama--Llama-4-Scout-17B-16E-Instruct\\snapshots\\7dab2f5f854fe665b6b2f1eccbd3c48e5f627ad8'
+    
+    #-----------------------------------------------------------------------------------------------------
     
     #----------------LLAMA 4 -------------------------------------------
-    # path_to_save_model = 'C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\llm\\llama4_orbital_chat_17B_128E_q4'
+    # path_to_save_model = 'C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\llm\\llama4_MAVERICK_orbital_chat_17B_128E_q4'
     # path_to_model = 'meta-llama/Llama-4-Maverick-17B-128E-Instruct'
-    
-    # path_to_save_model = 'C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\llm\\llama4_orbital_chat_17B_16E_q4'
+    # ----------------------Funciona ????---------------------------------------------------
+    # path_to_save_model = 'C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\llm\\llama4_SCOUT_orbital_chat_17B_16E_q4'
     # path_to_model = 'meta-llama/Llama-4-Scout-17B-16E-Instruct'
-    
-     # path_to_save_model = 'C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\llm\\llama4_orbital_chat_17B_128E_FP8_q4'
+    # path_to_model = 'C:\\Users\\Emilio\\.cache\\huggingface\\hub\\models--meta-llama--Llama-4-Scout-17B-16E-Instruct\\snapshots\\7dab2f5f854fe665b6b2f1eccbd3c48e5f627ad8'
+    # ------------------------------------------------------------------------------------------------------
+    # path_to_save_model = 'C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\llm\\llama4_MAVERICK_orbital_chat_17B_128E_FP8_q4'
     # path_to_model = 'meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8'
     
-    
-    #MODELOS QUANTIZADOS
-    # path_to_save_model = 'C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\llm\\llama4_orbital_chat_17B_16E_8bit_q4'
-    # path_to_model = 'unsloth/Llama-4-Scout-17B-16E-Instruct-unsloth-bnb-8bit'
-    
-    # path_to_save_model = 'C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\llm\\llama4_orbital_chat_17B_16E_4bit_q4'
-    # path_to_model = 'unsloth/Llama-4-Scout-17B-16E-Instruct-unsloth-bnb-4bit'
-    
-    # path_to_save_model = 'C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\llm\\llama4_orbital_chat_17B_16E_q4_Instruct'
-    # path_to_model = 'unsloth/Llama-4-Scout-17B-16E-Instruct'
-    
-    # path_to_save_model = 'C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\llm\\llama4_orbital_chat_17B_128E_q4_Instruct'
-    # path_to_model = 'unsloth/Llama-4-Maverick-17B-128E-Instruct'
-    
-    # path_to_save_model = 'C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\llm\\llama4_orbital_chat_17B_128E_q4_Instruct_FP8'
-    # path_to_model = 'unsloth/Llama-4-Maverick-17B-128E-Instruct-FP8'
-    
-    # path_to_save_model = 'C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\llm\\llama4_orbital_chat_17B_16E_q4_4bit'
+    # path_to_save_model = 'C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\llm\\llama4_MAVERICK_orbital_chat_17B_16E_q4_4bit'
     # path_to_model = 'mlx-community/Llama-4-Maverick-17B-16E-Instruct-4bit'
     
-    # path_to_save_model = 'C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\llm\\llama4_orbital_chat_17B_16E_q4_6bit'
+    # path_to_save_model = 'C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\llm\\llama4_MAVERICK_orbital_chat_17B_16E_q4_6bit'
     # path_to_model = 'mlx-community/Llama-4-Maverick-17B-16E-Instruct-6bit'
     
     #download for ollama
@@ -116,7 +107,7 @@ def main():
     
 
     # tokenizer = AutoTokenizer.from_pretrained("meta-llama/Llama-3.2-3B-Instruct", token="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")
-    tokenizer = AutoTokenizer.from_pretrained(path_to_model, token="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")
+    tokenizer = AutoTokenizer.from_pretrained(path_to_model, fast_tokenizer=True)
     tokenizer.chat_template = LLAMA_3_CHAT_TEMPLATE
     
     # Model    
@@ -142,23 +133,37 @@ def main():
     )
     
     quantization_config = BitsAndBytesConfig(
-            load_in_4bit=True,
+            # load_in_4bit=True,
             bnb_4bit_use_double_quant=True,
             bnb_4bit_quant_type="nf4",
             bnb_4bit_compute_dtype=torch_dtype,
             bnb_4bit_quant_storage=quant_storage_dtype,
+            # llm_int8_enable_fp32_cpu_offload=True,
         )
-    
+    torch.cuda.empty_cache()
+    model_config = AutoConfig.from_pretrained(path_to_model)
     model = AutoModelForCausalLM.from_pretrained(
         path_to_model,
         quantization_config=quantization_config,
         low_cpu_mem_usage=True,
         device_map='auto',
-        token="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",
+        # token="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",
         attn_implementation="sdpa", # use sdpa, alternatively use "flash_attention_2"
         torch_dtype=quant_storage_dtype,
-        use_cache=False if training_args.gradient_checkpointing else True,  # this is needed for gradient checkpointing
+        config=model_config,
     )
+
+    #GUARDADO USO POSTERIOR
+    
+    # state  = model.state_dict()
+    # torch.save(state, path_to_save_model+'\\orbital')
+    # # # move the model parameter to cpu
+    # # state = torch.load(path_to_save_model+'\\orbital', map_location=torch.device('cpu'))
+    # # model.save_pretrained(path_to_save_model, safe_serialization=True, max_shard_size='3GB')
+    # from optimum.bettertransformer import BetterTransformer
+    # # model = BetterTransformer.transform(model)
+    # model.save_pretrained(path_to_save_model) 
+   
     
     
     if training_args.gradient_checkpointing:
@@ -187,6 +192,7 @@ def main():
 
     
     data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm=False, mlm_probability=0.15)
+    # tokenizer.save_pretrained(path_to_save_model)
     ################
     # PEFT
     ################
@@ -204,9 +210,9 @@ def main():
     
     model.add_adapter(peft_config)
 
-    # model = AutoPeftModelForCausalLM.from_pretrained(model.state_dict(), 
-    #                                                  low_cpu_mem_usage = True, torch_dtype=torch.bfloat16, peft_config=peft_config, device = 'auto')
-    # model.merge_and_unload()
+    model = AutoPeftModelForCausalLM.from_pretrained(model.state_dict(), 
+                                                     low_cpu_mem_usage = True, torch_dtype=torch.bfloat16, peft_config=peft_config, device = 'auto')
+    model.merge_and_unload()
     ################
     # Training
     ################
@@ -243,11 +249,30 @@ def main():
     # # with torch.no_grad():
     # torch.inference_mode()
     # torch.cuda.empty_cache()
+       # move the model parameter to cpu
+    # state = torch.load(path_to_save_model+'\\orbital', map_location=torch.device('cpu'))
+
+    # ------------------------------------------SAVE MODEL-----------------------------------------------------------------
+
+    # model_to_save = model.module if hasattr(model, 'module') else model
+    CONFIG_NAME = "config.json"
+    WEIGHTS_NAME = "orbital.bin"
+    if not os.path.exists(path_to_save_model):
+        os.makedirs(path_to_save_model)
+    
     state  = model.state_dict()
     torch.save(state, path_to_save_model+'\\orbital')
-    # move the model parameter to cpu
-    state = torch.load(path_to_save_model+'\\orbital', map_location=torch.device('cpu'))
+    # model.load_state_dict(state)
+    output_model_file = os.path.join(path_to_save_model, WEIGHTS_NAME)
+    output_config_file = os.path.join(path_to_save_model, CONFIG_NAME)
+    save_dict = model.state_dict()
+    torch.save(save_dict, output_model_file)
+    model.config.to_json_file(output_config_file)
+    # tokenizer.save_vocabulary(path_to_save_model)
+    tokenizer.save_pretrained(path_to_save_model)
+    model_config.save_pretrained(path_to_save_model)
 
+# ----------------------------------------------------------------------------------------------------------------------------------
     # # torch.save(state, path_to_save_model+'\\audio_classifier')
     # # # move the model parameter to cpu
     # # state = torch.load(path_to_save_model+'\\audio_classifier', map_location=torch.device('cpu'))
@@ -259,10 +284,16 @@ def main():
 
     # #save model
     # # torch.save(state, './TrainingTest/orbital')
-    # model = AutoPeftModelForCausalLM.from_pretrained(path_to_save_model, low_cpu_mem_usage = True, torch_dtype=torch.bfloat16, peft_config=peft_config)
-    # model.merge_and_unload()
-    model.save_pretrained(path_to_save_model)
-    tokenizer.save_pretrained(path_to_save_model)
+    try:
+        # state_dict = torch.load(path_to_save_model, map_location='cpu')
+        model.load_state_dict({k.replace("name", ""): v for k, v in state.items()})
+        model = AutoPeftModelForCausalLM.from_pretrained(path_to_save_model, low_cpu_mem_usage = True, torch_dtype=torch.bfloat16, peft_config=peft_config)
+        model.merge_and_unload()
+    except Exception as e:
+        print(e)
+    finally:
+        model.save_pretrained(path_to_save_model)
+        tokenizer.save_pretrained(path_to_save_model)
 
     #save gguf for ollama serve
     # Step 3: Save the Fine-Tuned Model
@@ -280,9 +311,9 @@ def main():
     # Feel free to adapt this script to better fit your needs. Happy fine-tuning!
     # import os
     os.environ['HF_TOKENIZER'] = "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"
-    model.push_to_hub("emiliogsAI/test2", use_auth_token=os.getenv("HF_TOKENIZER"))
+    model.push_to_hub("emiliogsAI/test2", token=os.getenv("HF_TOKENIZER"))
     
-    tokenizer.push_to_hub("emiliogsAI/test2", use_auth_token=os.getenv("HF_TOKENIZER"))
+    tokenizer.push_to_hub("emiliogsAI/test2", token=os.getenv("HF_TOKENIZER"))
 
     # model.save_pretrained(path_to_save_model, safe_serialization=True, max_shard_size='3GB')
     # tokenizer.save_pretrained(path_to_save_model)
