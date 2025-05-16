@@ -1,0 +1,75 @@
+Para trabajar en un entorno cerrado sin acceso a internet, te recomendaría utilizar modelos de embeddings que puedas descargar y utilizar localmente. Aquí tienes algunas opciones:
+
+Word2Vec:
+
+Descripción: Un modelo basado en redes neuronales que aprende representaciones vectoriales de palabras a partir de grandes corpus de texto.
+Ventajas: Captura relaciones semánticas entre palabras y es relativamente ligero.
+Desventajas: No maneja bien palabras fuera del vocabulario (OOV).
+Uso:
+
+
+GloVe:
+
+Descripción: Utiliza estadísticas globales de co-ocurrencia de palabras en un corpus.
+Ventajas: Captura relaciones semánticas y contextuales.
+Desventajas: Similar a Word2Vec, tiene problemas con palabras OOV.
+Uso:
+
+
+FastText:
+
+Descripción: Extiende Word2Vec al considerar subpalabras (n-gramas).
+Ventajas: Maneja mejor palabras OOV y captura morfología de las palabras.
+Desventajas: Puede ser más lento en entrenamiento y uso.
+Uso:
+
+
+Doc2Vec:
+
+Descripción: Una extensión de Word2Vec para generar embeddings de documentos completos.
+Ventajas: Útil para tareas de clasificación y similitud de documentos.
+Desventajas: Requiere más datos y tiempo de entrenamiento.
+Uso:
+
+
+Estas opciones te permiten trabajar completamente offline una vez que hayas descargado los modelos necesarios 1 2.
+
+¿Te gustaría más detalles sobre alguno de estos métodos o tienes alguna otra pregunta? 1: OpenWebinars 2: Blog elhacker.NET
+
+
+
+1
+Favicon type
+Cuadernos de código abierto para generar embeddings de texto con ...
+
+2
+Favicon type
+Blog elhacker.NET: ¿Qué son los «embeddings» en un LLM?
+
+métodos para generar embeddings sin acceso a internet
+
+Editar en Pages
+
+
+
+
+
+El contenido generado por IA puede ser incorrecto
+You said:
+
+no quiero descargar modelos de internet, solo quiero el código python, para generar dichos embeddings en local sin tener que acceder a internet
+Copilot said:
+Copilot
+¡Entendido! Si deseas generar embeddings en local sin descargar modelos preentrenados de internet, puedes entrenar tus propios modelos utilizando tus datos. Aquí te dejo ejemplos de cómo hacerlo con Word2Vec, GloVe, FastText, y Doc2Vec:
+
+Word2Vec
+
+GloVe
+Para GloVe, necesitarás implementar el algoritmo desde cero o utilizar una implementación local. Aquí hay un ejemplo simplificado:
+
+
+FastText
+
+Doc2Vec
+
+Estos ejemplos te permiten entrenar modelos de embeddings localmente utilizando tus propios datos. ¿Te gustaría más detalles sobre alguno de estos métodos o tienes alguna otra pregunta?

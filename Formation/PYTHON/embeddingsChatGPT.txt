@@ -1,0 +1,365 @@
+OPCIÓN 2: Crear tu propio modelo de "embeddings" simples usando TF-IDF (sin redes neuronales)
+Si no puedes descargar ningún modelo, ni moverlo desde otra máquina, tu única opción es no usar embeddings reales. Puedes hacer algo simple pero funcional con TF-IDF, que no requiere modelos ni redes neuronales:
+
+✔ Ventajas:
+100% offline
+
+Solo necesitas scikit-learn
+
+🧠 Código TF-IDF 100% offline
+python
+Copiar
+Editar
+import os
+import json
+import pickle
+from pymongo import MongoClient
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+import boto3
+
+# === Configuración ===
+VECTOR_STORE_PATH = './tfidf_data.pkl'
+MONGO_URI = 'mongodb://localhost:27017'
+MONGO_DB = 'mi_base_datos'
+MONGO_COLLECTION = 'mi_coleccion'
+S3_BUCKET = 'mi-bucket'
+S3_PREFIX = 'documentos/'
+S3_LOCAL_TMP = './s3_tmp'
+
+# === Cargar corpus ===
+documents = []
+metadata = []
+
+def load_mongodb_documents():
+    client = MongoClient(MONGO_URI)
+    collection = client[MONGO_DB][MONGO_COLLECTION]
+    for doc in collection.find():
+        text = json.dumps(doc, ensure_ascii=False)
+        documents.append(text)
+        metadata.append({'source': 'mongo'})
+
+def load_s3_documents():
+    s3 = boto3.client('s3')
+    if not os.path.exists(S3_LOCAL_TMP):
+        os.makedirs(S3_LOCAL_TMP)
+    paginator = s3.get_paginator('list_objects_v2')
+    for page in paginator.paginate(Bucket=S3_BUCKET, Prefix=S3_PREFIX):
+        for obj in page.get('Contents', []):
+            key = obj['Key']
+            local_path = os.path.join(S3_LOCAL_TMP, os.path.basename(key))
+            s3.download_file(S3_BUCKET, key, local_path)
+            with open(local_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+                documents.append(content)
+                metadata.append({'source': 's3', 'filename': key})
+
+conversation_history = []
+
+def add_conversation_to_documents():
+    full_convo = "\n".join(conversation_history)
+    documents.append(full_convo)
+    metadata.append({'source': 'chat'})
+
+# === Guardar / cargar índice TF-IDF ===
+if os.path.exists(VECTOR_STORE_PATH):
+    with open(VECTOR_STORE_PATH, 'rb') as f:
+        vectorizer, tfidf_matrix, metadata = pickle.load(f)
+else:
+    load_mongodb_documents()
+    load_s3_documents()
+    add_conversation_to_documents()
+    vectorizer = TfidfVectorizer()
+    tfidf_matrix = vectorizer.fit_transform(documents)
+    with open(VECTOR_STORE_PATH, 'wb') as f:
+        pickle.dump((vectorizer, tfidf_matrix, metadata), f)
+
+# === Consulta ===
+def query_tfidf(user_input: str, top_k: int = 5):
+    query_vec = vectorizer.transform([user_input])
+    similarities = cosine_similarity(query_vec, tfidf_matrix).flatten()
+    top_indices = similarities.argsort()[-top_k:][::-1]
+    results = []
+    for idx in top_indices:
+        results.append({
+            'text': documents[idx],
+            'metadata': metadata[idx],
+            'score': similarities[idx]
+        })
+    return results
+
+# === Ejecución principal ===
+if __name__ == "__main__":
+    user_input = input("Tu pregunta: ")
+    conversation_history.append(user_input)
+
+    results = query_tfidf(user_input)
+    print("\n→ Resultados:")
+    for r in results:
+        print(f"Fuente: {r['metadata']['source']} - Score: {r['score']:.2f}")
+        print(f"Contenido:\n{r['text'][:500]}")
+        print("="*50)
+✅ Conclusión
+Si puedes mover archivos desde otra máquina, lo ideal es descargar y copiar un modelo de embeddings como all-MiniLM-L6-v2.
+
+Si no puedes mover nada, usa TF-IDF. No es tan potente como embeddings neuronales, pero funciona bien para búsquedas básicas y es 100% offline.
+
+¿Quieres que te prepare un paquete .zip o instrucciones para generar un modelo sentence-transformers portable desde una máquina con internet?
+
+
+
+Tú dijiste:
+El modelo TF-IDF, puede ser entrenado y guardado ?
+
+ChatGPT Plus
+Sí, el modelo TF-IDF puede ser entrenado y guardado fácilmente. De hecho, eso es uno de sus puntos fuertes: es muy ligero, rápido de entrenar y completamente serializable con pickle.
+
+✅ ¿Qué puedes guardar?
+El TfidfVectorizer ya entrenado (con su vocabulario, pesos, etc.).
+
+La matriz TF-IDF transformada (tfidf_matrix).
+
+Los metadatos asociados (por ejemplo, el origen de cada documento).
+
+Una vez guardado todo esto, puedes cargarlo después sin necesidad de volver a entrenar el modelo ni acceder a los datos originales.
+
+💾 Ejemplo completo para entrenar y guardar
+python
+Copiar
+Editar
+from sklearn.feature_extraction.text import TfidfVectorizer
+import pickle
+
+# Lista de documentos de ejemplo
+documents = [
+    "El clima está soleado en Madrid.",
+    "Hoy ha llovido mucho en Barcelona.",
+    "La inteligencia artificial avanza rápidamente.",
+]
+
+# Entrenamos el vectorizador
+vectorizer = TfidfVectorizer()
+tfidf_matrix = vectorizer.fit_transform(documents)
+
+# Guardamos el modelo y la matriz TF-IDF
+with open('tfidf_model.pkl', 'wb') as f:
+    pickle.dump((vectorizer, tfidf_matrix, documents), f)
+📦 Cargar el modelo guardado y usarlo
+python
+Copiar
+Editar
+import pickle
+from sklearn.metrics.pairwise import cosine_similarity
+
+# Cargar el vectorizador y los datos
+with open('tfidf_model.pkl', 'rb') as f:
+    vectorizer, tfidf_matrix, documents = pickle.load(f)
+
+# Nueva consulta
+query = "¿Qué tiempo hace hoy en España?"
+query_vec = vectorizer.transform([query])
+
+# Buscar documentos más similares
+similarities = cosine_similarity(query_vec, tfidf_matrix).flatten()
+top_indices = similarities.argsort()[-3:][::-1]
+
+# Mostrar resultados
+for idx in top_indices:
+    print(f"Documento: {documents[idx]}")
+    print(f"Score: {similarities[idx]:.2f}")
+    print("---")
+✅ Ventajas del enfoque
+100% offline
+
+Muy rápido de entrenar y usar
+
+Fácil de guardar y cargar
+
+Compatible con todos los formatos de texto
+
+¿Quieres que prepare una estructura de proyecto mínima con todo organizado para usar TF-IDF con MongoDB y S3, incluyendo guardado/carga automática del índice?
+
+
+
+Tú dijiste:
+si
+
+ChatGPT Plus
+Perfecto. Aquí tienes una estructura de proyecto mínima para usar TF-IDF offline con:
+
+MongoDB
+
+Ficheros en S3
+
+Historial de conversación
+
+Guardado automático del modelo y la matriz TF-IDF
+
+Consulta por texto en lenguaje natural
+
+📁 Estructura del Proyecto
+bash
+Copiar
+Editar
+tfidf_search_project/
+├── main.py                  # Script principal
+├── tfidf_engine.py          # Motor TF-IDF: entrenamiento, guardado, búsqueda
+├── data_loader.py           # Carga de MongoDB, S3, conversación
+├── config.py                # Parámetros globales del sistema
+├── saved/
+│   ├── tfidf_model.pkl      # Vectorizador, matriz y documentos (auto-generado)
+│   └── s3_tmp/              # Descargas temporales desde S3
+📄 config.py
+python
+Copiar
+Editar
+# config.py
+
+MONGO_URI = "mongodb://localhost:27017"
+MONGO_DB = "mi_base_datos"
+MONGO_COLLECTION = "mi_coleccion"
+
+S3_BUCKET = "mi-bucket"
+S3_PREFIX = "documentos/"
+S3_LOCAL_TMP = "saved/s3_tmp"
+
+TFIDF_MODEL_PATH = "saved/tfidf_model.pkl"
+📄 data_loader.py
+python
+Copiar
+Editar
+# data_loader.py
+
+import os
+import json
+from pymongo import MongoClient
+import boto3
+from config import *
+
+def load_from_mongodb():
+    client = MongoClient(MONGO_URI)
+    collection = client[MONGO_DB][MONGO_COLLECTION]
+    docs = []
+    for doc in collection.find():
+        text = json.dumps(doc, ensure_ascii=False)
+        docs.append((text, {'source': 'mongo'}))
+    return docs
+
+def load_from_s3():
+    docs = []
+    os.makedirs(S3_LOCAL_TMP, exist_ok=True)
+    s3 = boto3.client('s3')
+    paginator = s3.get_paginator('list_objects_v2')
+    for page in paginator.paginate(Bucket=S3_BUCKET, Prefix=S3_PREFIX):
+        for obj in page.get('Contents', []):
+            key = obj['Key']
+            local_path = os.path.join(S3_LOCAL_TMP, os.path.basename(key))
+            s3.download_file(S3_BUCKET, key, local_path)
+            with open(local_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+                docs.append((content, {'source': 's3', 'filename': key}))
+    return docs
+
+def load_conversation(conversation):
+    convo_text = "\n".join(conversation)
+    return [(convo_text, {'source': 'chat'})]
+📄 tfidf_engine.py
+python
+Copiar
+Editar
+# tfidf_engine.py
+
+import os
+import pickle
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+from config import TFIDF_MODEL_PATH
+
+class TFIDFEngine:
+    def __init__(self):
+        self.vectorizer = TfidfVectorizer()
+        self.documents = []
+        self.metadata = []
+        self.tfidf_matrix = None
+
+    def train(self, docs_with_meta):
+        texts, metas = zip(*docs_with_meta)
+        self.documents = list(texts)
+        self.metadata = list(metas)
+        self.tfidf_matrix = self.vectorizer.fit_transform(self.documents)
+
+    def save(self):
+        with open(TFIDF_MODEL_PATH, 'wb') as f:
+            pickle.dump((self.vectorizer, self.tfidf_matrix, self.documents, self.metadata), f)
+
+    def load(self):
+        with open(TFIDF_MODEL_PATH, 'rb') as f:
+            self.vectorizer, self.tfidf_matrix, self.documents, self.metadata = pickle.load(f)
+
+    def is_trained(self):
+        return os.path.exists(TFIDF_MODEL_PATH)
+
+    def query(self, text, top_k=5):
+        query_vec = self.vectorizer.transform([text])
+        scores = cosine_similarity(query_vec, self.tfidf_matrix).flatten()
+        top_indices = scores.argsort()[-top_k:][::-1]
+        results = []
+        for i in top_indices:
+            results.append({
+                'text': self.documents[i],
+                'metadata': self.metadata[i],
+                'score': scores[i]
+            })
+        return results
+📄 main.py
+python
+Copiar
+Editar
+# main.py
+
+from tfidf_engine import TFIDFEngine
+from data_loader import load_from_mongodb, load_from_s3, load_conversation
+
+conversation_history = []
+
+def main():
+    engine = TFIDFEngine()
+
+    if not engine.is_trained():
+        print("→ Entrenando modelo TF-IDF desde MongoDB y S3...")
+        docs = []
+        docs += load_from_mongodb()
+        docs += load_from_s3()
+        docs += load_conversation(conversation_history)
+        engine.train(docs)
+        engine.save()
+        print("→ Modelo guardado en disco.")
+    else:
+        print("→ Cargando modelo TF-IDF existente...")
+        engine.load()
+
+    while True:
+        user_input = input("\n🟢 Escribe tu consulta (o 'salir'): ")
+        if user_input.strip().lower() == 'salir':
+            break
+
+        conversation_history.append(user_input)
+
+        results = engine.query(user_input)
+        print("\n🔎 Resultados relevantes:")
+        for r in results:
+            print(f"\n📌 Fuente: {r['metadata']['source']} - Score: {r['score']:.2f}")
+            print(f"{r['text'][:500]}...")
+            print("-" * 40)
+
+if __name__ == '__main__':
+    main()
+✅ Requisitos
+Puedes instalar todo esto en la VM sin conexión a internet, con los siguientes paquetes descargados de antemano:
+
+bash
+Copiar
+Editar
+pip download scikit-learn numpy scipy pymongo boto3
+# Luego en la VM:
+pip install --no-index --find-links=/ruta scikit-learn numpy scipy pymongo boto3
