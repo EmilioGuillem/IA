@@ -1,0 +1,55 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Environment variables and credentials
+.env
+.env.local
+.env.*.local
+config/.env*
+.secret
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project-specific
+logs/*.log
+logs/schedule_run.log
+logs/portal_inspection_*.json
+*.tmp
+*.bak
+
+# Selenium
+geckodriver.log
+chromedriver
+chromedriver.exe
+
+# Credentials (important!)
+SOPRA_USERNAME
+SOPRA_PASSWORD
