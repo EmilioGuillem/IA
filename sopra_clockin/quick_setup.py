@@ -13,6 +13,7 @@ Usage:
 
 import sys
 import os
+import json
 import subprocess
 from pathlib import Path
 
@@ -31,10 +32,10 @@ def check_python():
     print(f"Python version: {version.major}.{version.minor}.{version.micro}")
     
     if version.major >= 3 and version.minor >= 8:
-        print("✓ Python version is compatible\n")
+        print("[OK] Python version is compatible\n")
         return True
     else:
-        print("✗ Python 3.8 or higher is required")
+        print("[ERROR] Python 3.8 or higher is required")
         print("  Download from: https://www.python.org/\n")
         return False
 
@@ -45,10 +46,10 @@ def install_dependencies():
     
     try:
         subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", "requirements.txt"])
-        print("\n✓ Dependencies installed successfully\n")
+        print("\n[OK] Dependencies installed successfully\n")
         return True
     except subprocess.CalledProcessError as e:
-        print(f"\n✗ Failed to install dependencies: {e}\n")
+        print(f"\n[ERROR] Failed to install dependencies: {e}\n")
         return False
 
 
@@ -56,26 +57,83 @@ def setup_credentials():
     """Setup credentials as environment variables."""
     print_header("Setting Up Credentials")
     
-    print("Your credentials will be stored as Windows environment variables.")
+    print("Your credentials will be stored in the configuration file.")
     print("They will be available for this script to use.\n")
     
     username = input("Enter your SopraGP4U username: ").strip()
     
     if not username:
-        print("✗ Username cannot be empty\n")
+        print("[ERROR] Username cannot be empty\n")
         return False
     
     password = input("Enter your SopraGP4U password: ").strip()
     
     if not password:
-        print("✗ Password cannot be empty\n")
+        print("[ERROR] Password cannot be empty\n")
         return False
     
-    # Set environment variables
-    os.environ['SOPRA_USERNAME'] = username
-    os.environ['SOPRA_PASSWORD'] = password
+    # Save to config file
+    config_file = Path("config/config.json")
+    config_data = {}
+    if config_file.exists():
+        try:
+            with open(config_file, 'r', encoding='utf-8') as f:
+                config_data = json.load(f)
+        except:
+            pass
     
-    print("\n✓ Credentials configured\n")
+    config_data['username'] = username
+    config_data['password'] = password
+    
+    try:
+        config_file.parent.mkdir(exist_ok=True)
+        with open(config_file, 'w', encoding='utf-8') as f:
+            json.dump(config_data, f, indent=2)
+        print("\n[OK] Credentials configured and saved")
+    except Exception as e:
+        print(f"\n[WARNING] Could not save config: {e}")
+    
+    return True
+
+
+def setup_browser():
+    """Setup browser preference."""
+    print_header("Select Browser")
+    
+    print("Which browser would you like to use for automation?\n")
+    print("  1. Chrome (default)")
+    print("  2. Edge\n")
+    
+    choice = input("Enter your choice (1 or 2): ").strip()
+    
+    if choice == "2":
+        browser = "edge"
+        print("\n[OK] Edge browser selected")
+    else:
+        browser = "chrome"
+        print("\n[OK] Chrome browser selected")
+    
+    # Save to config file
+    config_file = Path("config/config.json")
+    config_data = {}
+    if config_file.exists():
+        try:
+            with open(config_file, 'r', encoding='utf-8') as f:
+                config_data = json.load(f)
+        except:
+            pass
+    
+    config_data['browser'] = browser
+    
+    try:
+        config_file.parent.mkdir(exist_ok=True)
+        with open(config_file, 'w', encoding='utf-8') as f:
+            json.dump(config_data, f, indent=2)
+        print(f"[OK] Configuration saved to {config_file}")
+    except Exception as e:
+        print(f"[WARNING] Could not save config: {e}")
+    
+    print(f"  Browser set to '{browser}'\n")
     return True
 
 
@@ -91,7 +149,7 @@ def test_setup():
         )
         return result.returncode == 0
     except Exception as e:
-        print(f"✗ Test failed: {e}\n")
+        print(f"[ERROR] Test failed: {e}\n")
         return False
 
 
@@ -109,7 +167,7 @@ def configure_portal_elements():
             subprocess.check_call([sys.executable, "src/inspect_portal_elements.py"])
             return True
         except Exception as e:
-            print(f"✗ Inspector failed: {e}\n")
+            print(f"[ERROR] Inspector failed: {e}\n")
             return False
     else:
         print("\nYou can run it later with:")
@@ -132,7 +190,7 @@ def test_automation():
             )
             return result.returncode == 0
         except Exception as e:
-            print(f"✗ Test failed: {e}\n")
+            print(f"[ERROR] Test failed: {e}\n")
             return False
     else:
         print("\nYou can run it later with:")
@@ -151,6 +209,7 @@ def main():
         ("Check Python", check_python),
         ("Install Dependencies", install_dependencies),
         ("Setup Credentials", setup_credentials),
+        ("Select Browser", setup_browser),
         ("Run Setup Tests", test_setup),
         ("Configure Portal Elements", configure_portal_elements),
         ("Test Automation", test_automation),
@@ -163,12 +222,12 @@ def main():
             if step_func():
                 completed += 1
             else:
-                print(f"⚠ {step_name} did not complete successfully")
+                print(f"[WARNING] {step_name} did not complete successfully")
                 response = input("Continue anyway? (y/n): ").strip().lower()
                 if response != 'y':
                     break
         except KeyboardInterrupt:
-            print("\n\n✗ Setup interrupted by user")
+            print("\n\n[ERROR] Setup interrupted by user")
             sys.exit(1)
     
     # Summary
@@ -177,14 +236,14 @@ def main():
     print(f"Completed {completed}/{len(steps)} setup steps\n")
     
     if completed == len(steps):
-        print("✓ All setup steps completed successfully!")
+        print("[OK] All setup steps completed successfully!")
         print("\nYour automation is ready to use.")
         print("\nNext steps:")
         print("1. Review config/config.py for any adjustments")
         print("2. Set up Windows Task Scheduler (see README.md for instructions)")
         print("3. Test before deploying to production")
     else:
-        print("⚠ Some setup steps were skipped or failed.")
+        print("[WARNING] Some setup steps were skipped or failed.")
         print("\nReview the output above and fix any issues.")
     
     print("\nFor help, see: README.md\n")

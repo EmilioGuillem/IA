@@ -27,27 +27,27 @@ from pathlib import Path
 
 def run_command(cmd, description="", capture_output=False):
     """Run a shell command and return success status."""
-    print(f"\n▶ {description}...")
+    print(f"\n>> {description}...")
     
     try:
         if capture_output:
             result = subprocess.run(cmd, capture_output=True, text=True, shell=True)
             if result.returncode == 0:
-                print(f"  ✓ {description} completed")
+                print(f"  [OK] {description} completed")
                 return True, result.stdout
             else:
-                print(f"  ✗ {description} failed: {result.stderr}")
+                print(f"  [ERROR] {description} failed: {result.stderr}")
                 return False, result.stderr
         else:
             result = subprocess.run(cmd, shell=True)
             if result.returncode == 0:
-                print(f"  ✓ {description} completed")
+                print(f"  [OK] {description} completed")
                 return True, ""
             else:
-                print(f"  ✗ {description} failed")
+                print(f"  [ERROR] {description} failed")
                 return False, ""
     except Exception as e:
-        print(f"  ✗ Error: {str(e)}")
+        print(f"  [ERROR] Error: {str(e)}")
         return False, str(e)
 
 
@@ -69,13 +69,13 @@ def verify_environment():
         success, output = run_command(cmd, f"Checking {check_name}", capture_output=True)
         
         if success:
-            print(f"  ✓ {check_name}: OK")
+            print(f"  [OK] {check_name}: OK")
         else:
             if required:
-                print(f"  ✗ {check_name}: MISSING (REQUIRED)")
+                print(f"  [ERROR] {check_name}: MISSING (REQUIRED)")
                 all_ok = False
             else:
-                print(f"  ⚠ {check_name}: NOT FOUND (optional)")
+                print(f"  [WARNING] {check_name}: NOT FOUND (optional)")
     
     return all_ok
 
@@ -107,7 +107,7 @@ def setup_credentials_interactive():
     password = input("Password: ").strip()
     
     if not username or not password:
-        print("✗ Username and password are required")
+        print("[ERROR] Username and password are required")
         return False
     
     try:
@@ -126,11 +126,48 @@ def setup_credentials_interactive():
             capture_output=True
         )
         
-        print("✓ Credentials saved")
+        print("[OK] Credentials saved")
         return True
         
     except Exception as e:
-        print(f"✗ Failed to save credentials: {e}")
+        print(f"[ERROR] Failed to save credentials: {e}")
+        return False
+
+
+def setup_browser_preference():
+    """Setup browser preference."""
+    print("\n" + "="*60)
+    print("SETTING UP BROWSER PREFERENCE")
+    print("="*60)
+    
+    print("\nWhich browser would you like to use for automation?")
+    print("  1. Chrome (default)")
+    print("  2. Edge\n")
+    
+    choice = input("Enter your choice (1 or 2): ").strip()
+    
+    if choice == "2":
+        browser = "edge"
+        print("\n[OK] Edge browser selected")
+    else:
+        browser = "chrome"
+        print("\n[OK] Chrome browser selected")
+    
+    try:
+        os.environ['SOPRA_BROWSER'] = browser
+        
+        # Also set system variable
+        subprocess.run(
+            f'setx SOPRA_BROWSER {browser}',
+            shell=True,
+            capture_output=True
+        )
+        
+        print(f"[OK] Browser preference saved ({browser})")
+        return True
+        
+    except Exception as e:
+        print(f"[ERROR] Failed to save browser preference: {e}")
         return False
 
 
@@ -150,6 +187,9 @@ def test_setup():
 
 def setup_scheduled_tasks():
     """Setup Windows Task Scheduler tasks."""
+
+
+
     print("\n" + "="*60)
     print("SETTING UP TASK SCHEDULER")
     print("="*60)
@@ -204,6 +244,7 @@ def full_deployment():
         ("VERIFY ENVIRONMENT", verify_environment),
         ("INSTALL DEPENDENCIES", install_dependencies),
         ("SETUP CREDENTIALS", setup_credentials_interactive),
+        ("SELECT BROWSER", setup_browser_preference),
         ("RUN TESTS", test_setup),
         ("SETUP TASK SCHEDULER", setup_scheduled_tasks),
     ]
@@ -263,7 +304,7 @@ def main():
     # Final summary
     print("\n" + "="*60)
     if success:
-        print("✓ DEPLOYMENT SUCCESSFUL")
+        print("[OK] DEPLOYMENT SUCCESSFUL")
         print("="*60)
         print("\nNext steps:")
         print("1. Review and customize config/config.py if needed")
@@ -271,7 +312,7 @@ def main():
         print("3. Test manually: python src/sopra_clockin.py")
         print("4. Monitor via: Get-Content logs/sopra_clockin.log -Wait")
     else:
-        print("✗ DEPLOYMENT FAILED")
+        print("[ERROR] DEPLOYMENT FAILED")
         print("="*60)
         print("\nReview errors above and fix issues")
     

@@ -36,12 +36,13 @@ def setup_logger(name):
     file_handler = logging.handlers.RotatingFileHandler(
         LOG_FILE,
         maxBytes=10*1024*1024,  # 10MB
-        backupCount=10  # Keep 10 backup files
+        backupCount=10,  # Keep 10 backup files
+        encoding='utf-8'  # Explicit UTF-8 encoding
     )
     file_handler.setLevel(getattr(logging, LOG_LEVEL))
     file_handler.setFormatter(formatter)
     
-    # Console handler
+    # Console handler with UTF-8 encoding
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setLevel(logging.INFO)
     console_handler.setFormatter(formatter)

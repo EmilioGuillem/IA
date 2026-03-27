@@ -34,6 +34,14 @@ echo ===================================================================== >> "%
 REM Change to project directory
 cd /d "%PROJECT_DIR%"
 
+REM Set browser preference (options: chrome, edge)
+REM Uncomment and modify the line below to use Edge instead of Chrome:
+REM set SOPRA_BROWSER=edge
+REM Default is Chrome if not set
+if not defined SOPRA_BROWSER (
+    set SOPRA_BROWSER=chrome
+)
+
 REM Check if Python is installed
 %PYTHON_EXE% --version >nul 2>&1
 if !errorlevel! neq 0 (
@@ -42,7 +50,7 @@ if !errorlevel! neq 0 (
 )
 
 REM Run the main script
-echo Starting automation script... >> "%SCHEDULE_LOG%"
+echo Starting automation script with browser: %SOPRA_BROWSER% >> "%SCHEDULE_LOG%"
 %PYTHON_EXE% src\sopra_clockin.py >> "%SCHEDULE_LOG%" 2>&1
 
 if !errorlevel! equ 0 (

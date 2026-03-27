@@ -30,7 +30,8 @@ from config.config import (
     SOPRA_URL, MENU_LINK_TEXT, CLOCK_IN_THRESHOLD, CLOCK_OUT_THRESHOLD,
     CLOCK_IN_BUTTON_ID, CLOCK_OUT_BUTTON_ID, SOPRA_USERNAME, SOPRA_PASSWORD,
     WAIT_TIMEOUT, PAGE_LOAD_TIMEOUT, MAX_RETRIES, RETRY_DELAY, DRY_RUN,
-    HEADLESS_MODE, CHROME_OPTIONS
+    HEADLESS_MODE, CHROME_OPTIONS, EDGE_OPTIONS, BROWSER,
+    CLOCK_IN_SELECTOR, CLOCK_OUT_SELECTOR
 )
 
 try:
@@ -40,12 +41,43 @@ try:
     from selenium.webdriver.support import expected_conditions as EC
     from selenium.webdriver.chrome.service import Service
     from selenium.webdriver.chrome.options import Options
+    from selenium.webdriver.edge.options import Options as EdgeOptions
 except ImportError:
     print("ERROR: Selenium is not installed. Install it with: pip install selenium")
     sys.exit(1)
 
 # Initialize logger
 logger = setup_logger(__name__)
+
+
+def get_selector_tuple(selector_dict):
+    """
+    Convert selector dictionary to Selenium By tuple.
+    
+    Args:
+        selector_dict (dict): {'method': 'id', 'value': 'CLOCK-IN'}
+    
+    Returns:
+        tuple: (By.ID, 'CLOCK-IN')
+    """
+    method = selector_dict.get('method', 'id').lower()
+    value = selector_dict.get('value', '')
+    
+    if method == 'id':
+        return (By.ID, value)
+    elif method == 'xpath':
+        return (By.XPATH, value)
+    elif method == 'css' or method == 'class':
+        return (By.CSS_SELECTOR, value)
+    elif method == 'name':
+        return (By.NAME, value)
+    elif method == 'link_text':
+        return (By.LINK_TEXT, value)
+    elif method == 'partial_link_text':
+        return (By.PARTIAL_LINK_TEXT, value)
+    else:
+        # Default to ID
+        return (By.ID, value)
 
 
 class SopraClockInAutomation:
@@ -74,11 +106,23 @@ class SopraClockInAutomation:
     
     def setup_driver(self):
         """
-        Initialize and configure the Chrome WebDriver.
+        Initialize and configure the WebDriver (Chrome or Edge).
         
         Returns:
             bool: True if successful, False otherwise
         """
+        try:
+            if BROWSER == "edge":
+                return self._setup_edge_driver()
+            else:
+                return self._setup_chrome_driver()
+            
+        except Exception as e:
+            logger.error(f"Failed to setup WebDriver: {str(e)}", exc_info=True)
+            return False
+    
+    def _setup_chrome_driver(self):
+        """Setup Chrome WebDriver."""
         try:
             logger.info("Setting up Chrome WebDriver...")
             
@@ -105,7 +149,36 @@ class SopraClockInAutomation:
             return True
             
         except Exception as e:
-            logger.error(f"Failed to setup WebDriver: {str(e)}", exc_info=True)
+            logger.error(f"Failed to setup Chrome WebDriver: {str(e)}", exc_info=True)
+            return False
+    
+    def _setup_edge_driver(self):
+        """Setup Edge WebDriver."""
+        try:
+            logger.info("Setting up Edge WebDriver...")
+            
+            edge_options = EdgeOptions()
+            
+            # Apply configuration options
+            if HEADLESS_MODE:
+                edge_options.add_argument("--headless")
+                logger.info("Running in headless mode")
+            
+            edge_options.add_argument("--window-size=1920,1080")
+            edge_options.add_argument("--disable-blink-features=AutomationControlled")
+            edge_options.add_experimental_option("excludeSwitches", ["enable-automation"])
+            edge_options.add_experimental_option('useAutomationExtension', False)
+            
+            # Initialize WebDriver
+            self.driver = webdriver.Edge(options=edge_options)
+            self.driver.set_page_load_timeout(PAGE_LOAD_TIMEOUT)
+            self.wait = WebDriverWait(self.driver, WAIT_TIMEOUT)
+            
+            logger.info("Edge WebDriver initialized successfully")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Failed to setup Edge WebDriver: {str(e)}", exc_info=True)
             return False
     
     def close_driver(self):
@@ -135,42 +208,143 @@ class SopraClockInAutomation:
             logger.error(f"Failed to navigate to portal: {str(e)}", exc_info=True)
             return False
     
-    def login(self):
+    def check_login_required(self):
         """
-        Authenticate to the SopraGP4U portal.
+        Check if portal requires authentication.
         
         Returns:
-            bool: True if successful, False otherwise
+            bool: True if login form detected, False otherwise
         """
         try:
-            if not SOPRA_USERNAME or not SOPRA_PASSWORD:
-                logger.warning("Credentials not provided via environment variables")
-                logger.info("Credentials should be set in environment variables: SOPRA_USERNAME, SOPRA_PASSWORD")
+            # More specific login indicators - check for actual login forms
+            login_indicators = [
+                (By.ID, "username"),
+                (By.ID, "user"),
+                (By.ID, "login"),
+                (By.NAME, "username"),
+                (By.NAME, "user"),
+                (By.CLASS_NAME, "login-form"),
+                (By.CLASS_NAME, "login"),
+            ]
+            
+            for locator in login_indicators:
+                try:
+                    element = self.driver.find_element(*locator)
+                    # Check if element is actually visible and not just in the DOM
+                    if element.is_displayed():
+                        logger.info(f"Login form detected using {locator}")
+                        return True
+                except:
+                    continue
+            
+            logger.info("No login form detected")
+            return False
+        except Exception as e:
+            logger.warning(f"Error checking login requirement: {str(e)}")
+            return False
+    
+    def perform_login(self):
+        """
+        Handle portal authentication if required.
+        Only attempts login if credentials are available in environment.
+        
+        Returns:
+            bool: True if login successful or skipped, False only on actual failure
+        """
+        try:
+            # Get credentials from environment only
+            username = SOPRA_USERNAME
+            password = SOPRA_PASSWORD
+            
+            if not username or not password:
+                logger.warning("No credentials found in environment. Attempting to continue without login...")
+                return True  # Continue without login
+            
+            logger.info("Credentials found. Attempting authentication...")
+            
+            # Find and fill username field
+            username_field = None
+            username_locators = [
+                (By.ID, "username"),
+                (By.ID, "user"),
+                (By.NAME, "username"),
+                (By.NAME, "user"),
+            ]
+            
+            for locator in username_locators:
+                try:
+                    username_field = self.wait.until(
+                        EC.presence_of_element_located(locator),
+                        message=f"Username field {locator} not found"
+                    )
+                    break
+                except:
+                    continue
+            
+            if not username_field:
+                logger.warning("Username field not found. Assuming portal doesn't require login.")
+                return True  # Continue anyway - maybe we're already logged in or no login needed
+            
+            # Find and fill password field
+            password_field = None
+            password_locators = [
+                (By.ID, "password"),
+                (By.NAME, "password"),
+                (By.CSS_SELECTOR, "input[type='password']"),
+            ]
+            
+            for locator in password_locators:
+                try:
+                    password_field = self.driver.find_element(*locator)
+                    break
+                except:
+                    continue
+            
+            if not password_field:
+                logger.error("Password field not found in portal")
                 return False
             
-            logger.info("Attempting to login...")
-            
-            # Look for login form elements
-            # NOTE: Update selectors based on actual portal HTML structure
-            username_field = self.wait.until(
-                EC.presence_of_element_located((By.ID, "username")),
-                message="Username field not found"
-            )
-            
-            password_field = self.driver.find_element(By.ID, "password")
-            login_button = self.driver.find_element(By.ID, "login-button")
-            
             # Enter credentials
+            logger.info("Entering credentials...")
             username_field.clear()
-            username_field.send_keys(SOPRA_USERNAME)
+            username_field.send_keys(username)
+            time.sleep(0.5)
+            
             password_field.clear()
-            password_field.send_keys(SOPRA_PASSWORD)
+            password_field.send_keys(password)
+            time.sleep(0.5)
             
-            # Click login
-            login_button.click()
-            time.sleep(3)  # Wait for authentication
+            # Find and click login button
+            login_button = None
+            login_locators = [
+                (By.ID, "login"),
+                (By.ID, "login-button"),
+                (By.ID, "submit"),
+                (By.NAME, "login"),
+                (By.XPATH, "//button[contains(text(), 'Login')]"),
+                (By.XPATH, "//button[contains(text(), 'Sign in')]"),
+                (By.XPATH, "//button[@type='submit']"),
+            ]
             
-            logger.info("Login successful")
+            for locator in login_locators:
+                try:
+                    login_button = self.driver.find_element(*locator)
+                    break
+                except:
+                    continue
+            
+            if not login_button:
+                logger.error("Login button not found")
+                return False
+            
+            if DRY_RUN:
+                logger.info("[DRY RUN] Would click login button")
+            else:
+                logger.info("Clicking login button...")
+                login_button.click()
+                time.sleep(3)  # Wait for authentication
+            
+            logger.info("Login completed successfully")
             return True
             
         except Exception as e:
@@ -182,7 +356,7 @@ class SopraClockInAutomation:
         Click on the 'Registro de entrada/salida' menu link.
         
         Returns:
-            bool: True if successful, False otherwise
+            bool: True if successful or not needed, False otherwise
         """
         try:
             logger.info(f"Looking for menu link: '{MENU_LINK_TEXT}'")
@@ -203,7 +377,7 @@ class SopraClockInAutomation:
             return True
             
         except Exception as e:
-            logger.error(f"Failed to click menu link: {str(e)}", exc_info=True)
+            logger.info(f"Menu link not found ({str(e)}) - assuming we're already on the clock page")
             # Try alternative selectors
             return self._try_alternative_menu_links()
     
@@ -212,7 +386,7 @@ class SopraClockInAutomation:
         Try alternative methods to locate and click the menu link.
         
         Returns:
-            bool: True if successful, False otherwise
+            bool: True if successful or not needed, False otherwise
         """
         try:
             logger.info("Trying alternative selectors for menu link...")
@@ -220,7 +394,7 @@ class SopraClockInAutomation:
             # Try partial link text
             menu_link = self.wait.until(
                 EC.element_to_be_clickable((By.PARTIAL_LINK_TEXT, "Registro")),
-                message="Menu link with partial text 'Registro' not found"
+                timeout=2
             )
             
             if DRY_RUN:
@@ -233,8 +407,8 @@ class SopraClockInAutomation:
             return True
             
         except Exception as e:
-            logger.error(f"Failed to find menu link with alternative selectors: {str(e)}", exc_info=True)
-            return False
+            logger.info(f"Menu link not found with alternative selectors - assuming already on clock page")
+            return True  # Assume we're already on the correct page
     
     def click_clock_button(self):
         """
@@ -247,14 +421,16 @@ class SopraClockInAutomation:
             logger.info(f"Current time is {self.current_hour}:00 - outside clock-in/out windows")
             return True
         
-        button_id = CLOCK_IN_BUTTON_ID if self.action_type == 'CLOCK_IN' else CLOCK_OUT_BUTTON_ID
+        # Get the appropriate selector
+        selector_dict = CLOCK_IN_SELECTOR if self.action_type == 'CLOCK_IN' else CLOCK_OUT_SELECTOR
+        selector_tuple = get_selector_tuple(selector_dict)
         
         try:
-            logger.info(f"Looking for {self.action_type} button...")
+            logger.info(f"Looking for {self.action_type} button using {selector_tuple}")
             
             button = self.wait.until(
-                EC.element_to_be_clickable((By.ID, button_id)),
-                message=f"Button '{button_id}' not found"
+                EC.element_to_be_clickable(selector_tuple),
+                timeout=5
             )
             
             if DRY_RUN:
@@ -262,14 +438,29 @@ class SopraClockInAutomation:
             else:
                 button.click()
                 time.sleep(2)  # Wait for action to process
+                
+                # Log button state change
+                self._log_button_state_change()
+                
                 logger.info(f"Successfully clicked {self.action_type} button")
             
             return True
             
         except Exception as e:
-            logger.error(f"Failed to click {self.action_type} button: {str(e)}", exc_info=True)
+            logger.info(f"Button not found with configured selector {selector_tuple}: {str(e)}")
             # Try alternative selectors
             return self._try_alternative_clock_button()
+    
+    def _log_button_state_change(self):
+        """
+        Log the expected state change after clicking a button.
+        Clock-in disables clock-in button and enables clock-out button.
+        Clock-out disables clock-out button and enables clock-in button.
+        """
+        if self.action_type == 'CLOCK_IN':
+            logger.info("Clock-in button clicked - expecting clock-out button to be enabled now")
+        elif self.action_type == 'CLOCK_OUT':
+            logger.info("Clock-out button clicked - expecting clock-in button to be enabled now")
     
     def _try_alternative_clock_button(self):
         """
@@ -281,11 +472,12 @@ class SopraClockInAutomation:
         try:
             logger.info("Trying alternative selectors for clock button...")
             
-            button_text = "CLOCK-IN" if self.action_type == 'CLOCK_IN' else "CLOCK-OUT"
+            # Use lowercase button text as specified
+            button_text = "clock-in" if self.action_type == 'CLOCK_IN' else "clock-out"
             
-            # Try button by text
+            # Try button by text (case-insensitive)
             button = self.wait.until(
-                EC.element_to_be_clickable((By.XPATH, f"//button[contains(text(), '{button_text}')]")),
+                EC.element_to_be_clickable((By.XPATH, f"//button[contains(translate(text(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), '{button_text}')]")),
                 message=f"Button with text '{button_text}' not found"
             )
             
@@ -294,6 +486,7 @@ class SopraClockInAutomation:
             else:
                 button.click()
                 time.sleep(2)
+                self._log_button_state_change()
                 logger.info(f"Successfully clicked alternative clock button")
             
             return True
@@ -312,6 +505,7 @@ class SopraClockInAutomation:
         logger.info("="*80)
         logger.info("Starting SopraGP4U Clock In/Out Automation")
         logger.info(f"Current time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        logger.info(f"Browser: {BROWSER.upper()}")
         logger.info(f"Action type: {self.action_type}")
         logger.info(f"Dry run mode: {DRY_RUN}")
         logger.info("="*80)
@@ -328,12 +522,13 @@ class SopraClockInAutomation:
                 if not self.navigate_to_portal():
                     raise Exception("Failed to navigate to portal")
                 
-                # Login (if credentials provided)
-                if SOPRA_USERNAME and SOPRA_PASSWORD:
-                    if not self.login():
-                        raise Exception("Login failed")
+                # Check if authentication is required
+                if self.check_login_required():
+                    logger.info("Portal requires authentication")
+                    if not self.perform_login():
+                        raise Exception("Authentication failed")
                 else:
-                    logger.warning("Skipping login - credentials not provided")
+                    logger.info("Portal is accessible without authentication")
                 
                 # Click menu link
                 if not self.click_menu_link():
