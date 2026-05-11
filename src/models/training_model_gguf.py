@@ -58,12 +58,12 @@ def main():
     
     
     training_args= TrainingArguments(
-        output_dir=path_to_save_model,
+        output_dir=path_to_save_model+'output',
         eval_strategy="steps",
         eval_steps=10,
         logging_steps=10,
         save_steps=40,
-        learning_rate=2e-5,
+        learning_rate=2e-4,
         # per_device_train_batch_size=2,
         # per_device_eval_batch_size=2,
         auto_find_batch_size=True,
@@ -131,7 +131,7 @@ def main():
         args=training_args,
         train_dataset=train_tokenized_datasets,
         eval_dataset=eval_tokenized_datasets,
-        # peft_config=peft_config,
+        peft_config=peft_config,
         data_collator=data_collator,
         tokenizer=tokenizer,
     )
@@ -147,33 +147,37 @@ def main():
     ##########################
     # SAVE MODEL FOR SAGEMAKER
     ##########################
-    trainer.save_model(path_to_save_model+'\\output')
-
+    trainer.save_model(path_to_save_model+'output')
+    trainer = None;
     # -------------------------------------LORA--------------------------------------
 
-    model = PeftModel.from_pretrained(model, path_to_save_model+'\\output')
-    # model = model.merge_and_unload()
+    lora = PeftModel.from_pretrained(model, path_to_save_model+'output')
+    merged = lora.merge_and_unload()
     # model.save_pretrained("modelo_completo")
 
 
     # ------------------------------------------SAVE MODEL-----------------------------------------------------------------
     # 🔥 Fusiona solo si los adaptadores están activos
-    if hasattr(model, 'peft_config') and model.active_adapter:
-        model = model.merge_and_unload()
-        try:
-            model.save_pretrained(path_to_save_model+'\\output')
-        except:
-            CONFIG_NAME = "config.json"
-            WEIGHTS_NAME = "orbital.bin"
-            output_model_file = os.path.join(path_to_save_model+'\\output', WEIGHTS_NAME)
-            output_config_file = os.path.join(path_to_save_model+'\\output', CONFIG_NAME)
-            save_dict = model.state_dict()
-            torch.save(save_dict, output_model_file)
-            model.config.to_json_file(output_config_file)
-    else:
-        print("❌ No hay adaptadores activos para fusionar.")
-
-    tokenizer.save_pretrained(path_to_save_model+'\\output')
+    # if hasattr(model, 'peft_config') and model.active_adapter:
+    #     model = model.merge_and_unload()
+        # try:
+    #     model.save_pretrained(path_to_save_model+'output')
+    #     # except:
+    #     #     CONFIG_NAME = "config.json"
+    #     #     WEIGHTS_NAME = "orbital.bin"
+    #     #     output_model_file = os.path.join(path_to_save_model+'output', WEIGHTS_NAME)
+    #     #     output_config_file = os.path.join(path_to_save_model+'output', CONFIG_NAME)
+    #     #     save_dict = model.state_dict()
+    #     #     torch.save(save_dict, output_model_file)
+    #     #     model.config.to_json_file(output_config_file)
+    # else:
+    #     print("❌ No hay adaptadores activos para fusionar.")
+    # trainer = None;
+    
+    merged.save_pretrained(path_to_save_model+'output')
+    tokenizer.save_pretrained(path_to_save_model+'output')
+    output_config_file = os.path.join(path_to_save_model+'output', "config.json")
+    model.config.to_json_file(output_config_file)
 
 
 
@@ -185,16 +189,18 @@ def main():
 
 # -------------------------------------Save GGUF Format-----------------------------------------------------------
     os.mkdir(path_to_save_model+'\\model\\') 
-    conversion_gguf = llama.llamaCPP_python(path_to_save_model+'\\output', path_to_save_model+'\\model\\'+path_to_save_file)
+    conversion_gguf = llama.llamaCPP_python(path_to_save_model+'output', path_to_save_model+'model\\'+path_to_save_file)
     conversion_gguf.save_model_gguf()
 
     # -------------------------
     # 6. Cargar modelo GGUF y hacer inferencia con llama_cpp
     # -------------------------
-    import llama_cpp as Llama
+    from llama_cpp import Llama as llmcpp
+    path_to_save_model = 'C:\\Users\\Emilio\\Documents\\GitHub\\IA\\src\\llm\\test\\'
+    path_to_save_file = 'Llama-orbital-3.2-3B-Instruct-Q4_K_M.gguf'
     TEST_PROMPT = "Buenos días, Orbital!"
     print("🧠 Cargando modelo GGUF con llama_cpp...")
-    llm = Llama(model_path=path_to_save_model+'\\model\\'+path_to_save_file, n_ctx=2048)
+    llm = llmcpp(model_path=path_to_save_model+'model\\'+path_to_save_file, n_ctx=2048)
 
     print(f"💬 Prompt: {TEST_PROMPT}")
     output = llm(TEST_PROMPT, max_tokens=100, stop=["</s>"])
