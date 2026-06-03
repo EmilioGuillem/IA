@@ -15,8 +15,10 @@ import unittest
 from unittest.mock import Mock, patch, MagicMock
 from pathlib import Path
 
-# Add config directory to path
-sys.path.insert(0, str(Path(__file__).parent.parent))
+from selenium.webdriver.common.by import By
+
+# Add src directory to path
+sys.path.insert(0, str(Path(__file__).parent))
 
 from sopra_clockin import SopraClockInAutomation, get_selector_tuple
 from config.config import (
@@ -32,43 +34,43 @@ class TestSelectorConversion(unittest.TestCase):
         """Test ID selector conversion."""
         selector = {'method': 'id', 'value': 'test-id'}
         result = get_selector_tuple(selector)
-        self.assertEqual(result, ('id', 'test-id'))
+        self.assertEqual(result, (By.ID, 'test-id'))
     
     def test_get_selector_tuple_xpath(self):
         """Test XPath selector conversion."""
         selector = {'method': 'xpath', 'value': '//button[@id="test"]'}
         result = get_selector_tuple(selector)
-        self.assertEqual(result, ('xpath', '//button[@id="test"]'))
+        self.assertEqual(result, (By.XPATH, '//button[@id="test"]'))
     
     def test_get_selector_tuple_css(self):
         """Test CSS selector conversion."""
         selector = {'method': 'css', 'value': '.btn-primary'}
         result = get_selector_tuple(selector)
-        self.assertEqual(result, ('css_selector', '.btn-primary'))
+        self.assertEqual(result, (By.CSS_SELECTOR, '.btn-primary'))
     
     def test_get_selector_tuple_class(self):
         """Test class selector conversion (treated as CSS)."""
         selector = {'method': 'class', 'value': 'btn-primary'}
         result = get_selector_tuple(selector)
-        self.assertEqual(result, ('css_selector', 'btn-primary'))
+        self.assertEqual(result, (By.CSS_SELECTOR, 'btn-primary'))
     
     def test_get_selector_tuple_name(self):
         """Test name selector conversion."""
         selector = {'method': 'name', 'value': 'submit'}
         result = get_selector_tuple(selector)
-        self.assertEqual(result, ('name', 'submit'))
+        self.assertEqual(result, (By.NAME, 'submit'))
     
     def test_get_selector_tuple_link_text(self):
         """Test link text selector conversion."""
         selector = {'method': 'link_text', 'value': 'Click here'}
         result = get_selector_tuple(selector)
-        self.assertEqual(result, ('link_text', 'Click here'))
+        self.assertEqual(result, (By.LINK_TEXT, 'Click here'))
     
     def test_get_selector_tuple_partial_link_text(self):
         """Test partial link text selector conversion."""
         selector = {'method': 'partial_link_text', 'value': 'Click'}
         result = get_selector_tuple(selector)
-        self.assertEqual(result, ('partial_link_text', 'Click'))
+        self.assertEqual(result, (By.PARTIAL_LINK_TEXT, 'Click'))
     
     def test_get_selector_tuple_default(self):
         """Test default selector conversion (invalid method defaults to ID)."""
