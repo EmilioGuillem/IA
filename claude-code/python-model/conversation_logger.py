@@ -1,5 +1,5 @@
 import json
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from typing import Optional
 
@@ -9,7 +9,7 @@ DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 
 def _daily_conversations_path(date: Optional[datetime] = None) -> Path:
-    d = date or datetime.utcnow()
+    d = date or datetime.now(timezone.utc)
     name = f'conversations-{d.strftime("%Y-%m-%d")}.jsonl'
     return DATA_DIR / name
 
@@ -20,7 +20,7 @@ def append_conversation(model: str, user: str, assistant: str, metadata: Optiona
     The written record contains: timestamp, model, user, assistant, text (combined)
     """
     rec = {
-        'timestamp': datetime.utcnow().isoformat() + 'Z',
+        'timestamp': datetime.now(timezone.utc).isoformat(),
         'model': str(model),
         'user': user,
         'assistant': assistant,
@@ -37,7 +37,7 @@ def append_conversation(model: str, user: str, assistant: str, metadata: Optiona
 
 
 def list_conversation_files():
-    return sorted([p for p in DATA_DIR.glob('conversations-*.jsonl')])
+    return sorted(DATA_DIR.glob('conversations-*.jsonl'))
 
 
 def combine_conversations(output_path: Optional[Path] = None) -> Path:
@@ -93,17 +93,17 @@ def archive_conversations(older_than_days: int = 30, archive_dir: Optional[Path]
         archive_dir = DATA_DIR / 'archive'
     archive_dir.mkdir(parents=True, exist_ok=True)
 
-    cutoff = datetime.utcnow() - timedelta(days=older_than_days)
+    cutoff = datetime.now(timezone.utc) - timedelta(days=older_than_days)
     moved = 0
     for p in list_conversation_files():
         # filenames are conversations-YYYY-MM-DD.jsonl; parse date
         name = p.stem  # conversations-YYYY-MM-DD
         try:
             date_part = name.split('-', 1)[1]
-            file_date = datetime.strptime(date_part, '%Y-%m-%d')
+            file_date = datetime.strptime(date_part, '%Y-%m-%d').replace(tzinfo=timezone.utc)
         except Exception:
             # fallback to mtime
-            mtime = datetime.utcfromtimestamp(p.stat().st_mtime)
+            mtime = datetime.fromtimestamp(p.stat().st_mtime, timezone.utc)
             file_date = mtime
 
         if file_date < cutoff:

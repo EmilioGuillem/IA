@@ -17,7 +17,6 @@ def main():
     model = AutoModelForCausalLM.from_pretrained(args.model_path)
 
     print('Chat initialized. Escribe "salir" para terminar.')
-    conversation = []
     while True:
         user_message = input('\nUsuario: ').strip()
         if not user_message:
