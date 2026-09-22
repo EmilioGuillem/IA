@@ -7,12 +7,12 @@
 
 ## Goal
 
-Transform `claude-code/python-model/` from a simple Hugging Face chat scaffold into an original Python hybrid coding agent with local/open model support, workspace retrieval, policy-gated tools, memory, training, and evaluation.
+Transform `IA_copilot/python-model-local/` from a clean-room Python scaffold into an original hybrid coding agent with local/open model support, workspace retrieval, policy-gated tools, memory, training, and evaluation.
 
 ## Ground Rules
 
 - Follow ADR-0001: no copying or mechanical porting from proprietary reference material.
-- Keep implementation under `claude-code/python-model/` unless explicitly approved otherwise.
+- Keep implementation under `IA_copilot/python-model-local/` unless explicitly approved otherwise.
 - Fix existing broken Python only when it supports the approved architecture.
 - Add tests with every implementation phase.
 - Plan approved by the user on 2026-09-22.
@@ -114,7 +114,7 @@ Gate:
 
 Tasks:
 
-- `P7-T01`: Update `python-model/README.md` for clean-room architecture and commands.
+- `P7-T01`: Update `IA_copilot/python-model-local/README.md` for clean-room architecture and commands.
 - `P7-T02`: Add example policy/config files.
 - `P7-T03`: Add packaging metadata if the project should become installable.
 - `P7-T04`: Produce a final implementation summary and update ADR statuses if superseded.

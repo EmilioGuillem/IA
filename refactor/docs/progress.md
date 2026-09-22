@@ -24,7 +24,7 @@ Plan approved. Baseline validation is partially complete by static inspection; e
 ## Known Findings
 
 - The current Python scaffold is direct generation, not a full coding agent.
-- `python-model/finetune.py` has a syntax-level issue in an import statement.
+- The original `claude-code/python-model/finetune.py` has a syntax-level issue in an import statement; implementation now targets `IA_copilot/python-model-local/`.
 - Current tests are smoke-level and require a local model path.
 - Direct reuse of `claude-code/src/` is out of scope due clean-room constraints.
 - Static search found proprietary product identity/prompt references across the Python scaffold; these should be replaced with neutral clean-room naming and original prompts during Phase 1.
