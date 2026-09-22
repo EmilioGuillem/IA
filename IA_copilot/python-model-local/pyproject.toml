@@ -1,0 +1,32 @@
+# This file has been created (totally or partially) with the assistance of artificial intelligence tools.
+# All content has been generated under the direct supervision of a named individual,
+# and under the AI.Backbone Orchestrator Compliance framework
+
+[project]
+name = "code-agent-local"
+version = "0.1.0"
+description = "Clean-room local Python coding agent scaffold with optional model backends."
+requires-python = ">=3.10"
+dependencies = []
+
+[project.optional-dependencies]
+hf = [
+    "transformers>=4.45.0",
+    "datasets>=2.12.0",
+    "accelerate>=0.22.0",
+    "huggingface-hub>=0.14.0",
+    "safetensors>=0.4.0",
+]
+training = [
+    "peft>=0.4.0",
+]
+test = [
+    "pytest>=8.0.0",
+]
+
+[project.scripts]
+code-agent = "code_agent.cli:main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

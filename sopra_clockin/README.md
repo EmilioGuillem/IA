@@ -1,12 +1,17 @@
+<!-- AI_DISCLAIMER v1.0 -->
 # SopraGP4U Automatic Clock In/Out Automation
+
+> Este archivo ha sido creado total o parcialmente con la asistencia de herramientas de inteligencia artificial.
+> Todo el contenido ha sido generado bajo la supervisión directa de una persona identificada,
+> y bajo el marco de cumplimiento AI.Backbone Orchestrator.
 
 Programa automático para registrar entrada/salida en SopraGP4U mediante Python y Selenium.
 
 ## Descripción
 
 Este proyecto automatiza el proceso de registro de entrada/salida en el portal SopraGP4U:
-- **CLOCK-IN**: Se ejecuta automáticamente **antes de las 10:00 AM**
-- **CLOCK-OUT**: Se ejecuta automáticamente **después de las 5:00 PM (17:00)**
+- **CLOCK-IN**: Se intenta entre **08:00 y 09:30**; si el usuario inicia sesión más tarde, se usa la primera comprobación disponible
+- **CLOCK-OUT**: Se intenta desde **17:30**, únicamente cuando han pasado **más de 9 horas** desde el clock-in
 
 Todas las acciones se registran en archivos de log detallados para auditoría y depuración.
 
@@ -69,19 +74,11 @@ $env:SOPRA_PASSWORD = "tu_contraseña"
 python src/sopra_clockin.py
 ```
 
-#### Opción C: Crear un archivo `.env` (no recomendado en producción)
+#### Opción C: Usar el despliegue interactivo
 
-Crea `config/.env.ps1`:
-```powershell
-$env:SOPRA_USERNAME = "tu_usuario"
-$env:SOPRA_PASSWORD = "tu_contraseña"
-```
-
-Luego ejecuta:
-```powershell
-& config/.env.ps1
-python src/sopra_clockin.py
-```
+Ejecuta `python deploy.py` y selecciona la configuración de credenciales. El
+despliegue usa variables de entorno de Windows y no escribe las credenciales en
+`config/config.json`.
 
 ## Uso
 
@@ -152,8 +149,10 @@ Edita `config/config.py` para personalizar:
 ```python
 SOPRA_URL = "https://sprportal-mcp.soprahronline.com/SopraGP4U/"
 MENU_LINK_TEXT = "Registro de entrada/salida"
-CLOCK_IN_THRESHOLD = 10      # Hora límite para CLOCK-IN (10:00 AM)
-CLOCK_OUT_THRESHOLD = 17     # Hora mínima para CLOCK-OUT (5:00 PM)
+CLOCK_IN_START_HOUR = 8      # Inicio de ventana de CLOCK-IN
+CLOCK_IN_END_HOUR = 9        # Fin de ventana: 09:30
+CLOCK_OUT_START_HOUR = 17    # Nunca antes de 17:30
+MIN_WORK_HOURS = 9           # Deben pasar más de 9 horas
 HEADLESS_MODE = True         # Ejecutar sin interfaz visual
 DRY_RUN = False              # True para modo simulación
 MAX_RETRIES = 3              # Número de reintentos

@@ -1,2 +1,8 @@
+# This file has been created (totally or partially) with the assistance of
+# artificial intelligence tools. All content has been generated under the
+# direct supervision of a named individual and the AI.Backbone Orchestrator
+# Compliance framework.
+
 selenium>=4.0.0
 webdriver-manager>=3.8.0
+pytest>=8.0.0

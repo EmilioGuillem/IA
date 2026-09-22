@@ -1,3 +1,8 @@
+# This file has been created (totally or partially) with the assistance of
+# artificial intelligence tools. All content has been generated under the
+# direct supervision of a named individual and the AI.Backbone Orchestrator
+# Compliance framework.
+
 # Configuration file for SopraGP4U Clock In/Out automation
 # ============================================================================
 
@@ -28,9 +33,17 @@ config_data = load_config()
 SOPRA_URL = "https://sprportal-mcp.soprahronline.com/SopraGP4U/WAW05B02"
 MENU_LINK_TEXT = "Registro de entrada/salida"  # No longer needed - direct portal access
 
-# Time thresholds (in 24-hour format)
-CLOCK_IN_THRESHOLD = 10  # Before 10:00 AM
-CLOCK_OUT_THRESHOLD = 17  # After 5:00 PM (17:00)
+# Time windows and minimum working duration.
+CLOCK_IN_START_HOUR = 8
+CLOCK_IN_START_MINUTE = 0
+CLOCK_IN_END_HOUR = 9
+CLOCK_IN_END_MINUTE = 30
+CLOCK_OUT_START_HOUR = 17
+CLOCK_OUT_START_MINUTE = 30
+MIN_WORK_HOURS = 9
+# Kept for compatibility with older imports.
+CLOCK_IN_THRESHOLD = 10
+CLOCK_OUT_THRESHOLD = 17
 
 # Button selectors - flexible configuration
 CLOCK_IN_SELECTOR = config_data.get('clock_in', {'method': 'id', 'value': 'CLOCK-IN'})
@@ -62,13 +75,14 @@ LOGS_DIR = PROJECT_ROOT / "logs"
 LOGS_DIR.mkdir(exist_ok=True)
 
 LOG_FILE = LOGS_DIR / "sopra_clockin.log"
+STATE_FILE = LOGS_DIR / "clock_state.json"
 LOG_LEVEL = "INFO"
 LOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 LOG_DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 
-# Credentials (Optional - NOT required for this portal)
-SOPRA_USERNAME = config_data.get('username', os.getenv("SOPRA_USERNAME", ""))
-SOPRA_PASSWORD = config_data.get('password', os.getenv("SOPRA_PASSWORD", ""))
+# Credentials must remain outside configuration files.
+SOPRA_USERNAME = os.getenv("SOPRA_USERNAME", "")
+SOPRA_PASSWORD = os.getenv("SOPRA_PASSWORD", "")
 
 # Timeouts (in seconds)
 WAIT_TIMEOUT = 30
@@ -79,5 +93,10 @@ MAX_RETRIES = 3
 RETRY_DELAY = 5  # seconds
 
 # Enable/Disable features
-DRY_RUN = config_data.get('dry_run', os.getenv("SOPRA_DRY_RUN", "false").lower() == "true")
+dry_run_env = os.getenv("SOPRA_DRY_RUN")
+DRY_RUN = (
+    dry_run_env.lower() == "true"
+    if dry_run_env is not None
+    else bool(config_data.get('dry_run', False))
+)
 HEADLESS_MODE = config_data.get('headless', True)

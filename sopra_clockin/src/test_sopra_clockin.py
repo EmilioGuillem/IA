@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# This file has been created (totally or partially) with the assistance of
+# artificial intelligence tools. All content has been generated under the
+# direct supervision of a named individual and the AI.Backbone Orchestrator
+# Compliance framework.
+
 """
 Unit tests for SopraGP4U Clock In/Out automation
 ===============================================
@@ -12,6 +17,7 @@ Run with: python -m pytest src/test_sopra_clockin.py -v
 
 import sys
 import unittest
+from datetime import datetime, timedelta
 from unittest.mock import Mock, patch, MagicMock
 from pathlib import Path
 
@@ -83,22 +89,34 @@ class TestActionDetermination(unittest.TestCase):
     """Test action determination logic."""
     
     def test_clock_in_before_threshold(self):
-        """Test clock-in determination before threshold."""
+        """Test clock-in determination inside the preferred morning window."""
         automation = SopraClockInAutomation()
-        automation.current_hour = CLOCK_IN_THRESHOLD - 1
+        automation.current_hour = 9
+        automation.current_minute = 0
         self.assertEqual(automation._determine_action(), 'CLOCK_IN')
     
     def test_clock_out_after_threshold(self):
-        """Test clock-out determination after threshold."""
+        """Test clock-out after the minimum nine-hour duration."""
         automation = SopraClockInAutomation()
-        automation.current_hour = CLOCK_OUT_THRESHOLD + 1
+        automation.current_hour = 18
+        automation.current_minute = 0
+        automation.state['clock_in_at'] = (datetime.now() - timedelta(hours=10)).isoformat()
         self.assertEqual(automation._determine_action(), 'CLOCK_OUT')
     
     def test_no_action_during_work_hours(self):
-        """Test no action during work hours."""
+        """Test that checkout waits until nine hours have elapsed."""
         automation = SopraClockInAutomation()
-        automation.current_hour = (CLOCK_IN_THRESHOLD + CLOCK_OUT_THRESHOLD) // 2
+        automation.current_hour = 17
+        automation.current_minute = 30
+        automation.state['clock_in_at'] = (datetime.now() - timedelta(hours=8)).isoformat()
         self.assertEqual(automation._determine_action(), 'NONE')
+
+    def test_late_login_uses_nearest_available_check(self):
+        """Test fallback clock-in after the preferred window is missed."""
+        automation = SopraClockInAutomation()
+        automation.current_hour = 16
+        automation.current_minute = 30
+        self.assertEqual(automation._determine_action(), 'CLOCK_IN')
 
 
 class TestDriverSetup(unittest.TestCase):
@@ -240,6 +258,31 @@ class TestButtonClicking(unittest.TestCase):
         
         self.assertTrue(result)
         self.automation.wait.until.assert_not_called()
+
+    @patch('sopra_clockin.WebDriverWait')
+    def test_alternative_menu_uses_valid_short_wait(self, mock_wait_class):
+        fallback_wait = Mock()
+        fallback_wait.until.return_value = Mock()
+        mock_wait_class.return_value = fallback_wait
+
+        result = self.automation._try_alternative_menu_links()
+
+        self.assertTrue(result)
+        mock_wait_class.assert_called_once_with(self.automation.driver, 2)
+        fallback_wait.until.assert_called_once()
+
+    @patch('sopra_clockin.WebDriverWait')
+    def test_alternative_button_uses_valid_short_wait(self, mock_wait_class):
+        fallback_wait = Mock()
+        fallback_wait.until.return_value = Mock()
+        mock_wait_class.return_value = fallback_wait
+        self.automation.wait.until.side_effect = Exception("primary selector missing")
+
+        result = self.automation._try_alternative_clock_button()
+
+        self.assertTrue(result)
+        mock_wait_class.assert_called_once_with(self.automation.driver, 5)
+        fallback_wait.until.assert_called_once()
 
 
 class TestConfiguration(unittest.TestCase):

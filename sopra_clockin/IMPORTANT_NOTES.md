@@ -1,4 +1,9 @@
+<!-- AI_DISCLAIMER v1.0 -->
 # NOTAS IMPORTANTES - SopraGP4U Clock In/Out Automation
+
+> Este archivo ha sido creado total o parcialmente con la asistencia de herramientas de inteligencia artificial.
+> Todo el contenido ha sido generado bajo la supervisión directa de una persona identificada,
+> y bajo el marco de cumplimiento AI.Backbone Orchestrator.
 
 ## ⚠️ SEGURIDAD
 
@@ -16,7 +21,7 @@
 ## ⚠️ LIMITACIONES
 
 1. **Requiere Chrome instalado** → Selenium usa WebDriver de Chrome
-2. **No funciona sin interfaz visual** → Headless mode solo en Linux
+2. **Modo headless** → Requiere un navegador compatible y un driver disponible; también puede funcionar en Windows
 3. **Cambios en HTML → actualizar selectores**
 4. **VPN corporativa** → Asegúrate de estar conectado
 
@@ -39,7 +44,8 @@ echo $env:SOPRA_PASSWORD
 python src/test_setup.py
 
 # 5. Corre con DRY-RUN
-python src/sopra_clockin.py  # con DRY_RUN = True en config.py
+set SOPRA_DRY_RUN=true
+python src/sopra_clockin.py  # no pulsa botones
 ```
 
 ## 📝 CAMBIOS EN EL PORTAL
@@ -81,7 +87,7 @@ Si necesitas pausar la automatización:
 ```powershell
 # Deshabilitar tarea
 Disable-ScheduledTask -TaskName "SopraGP4U Clock In"
-Disable-ScheduledTask -SopraGP4U Clock Out"
+Disable-ScheduledTask -TaskName "SopraGP4U Clock Out"
 
 # Re-habilitar
 Enable-ScheduledTask -TaskName "SopraGP4U Clock In"

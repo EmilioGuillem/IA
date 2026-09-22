@@ -1,4 +1,9 @@
 @echo off
+REM This file has been created (totally or partially) with the assistance of
+REM artificial intelligence tools. All content has been generated under the
+REM direct supervision of a named individual and the AI.Backbone Orchestrator
+REM Compliance framework.
+
 REM ===================================================================
 REM SopraGP4U Clock In/Out Automation - Windows Batch Script
 REM ===================================================================
@@ -41,6 +46,9 @@ REM Default is Chrome if not set
 if not defined SOPRA_BROWSER (
     set SOPRA_BROWSER=chrome
 )
+
+REM Scheduled execution is real, not shadow mode.
+set SOPRA_DRY_RUN=false
 
 REM Check if Python is installed
 %PYTHON_EXE% --version >nul 2>&1

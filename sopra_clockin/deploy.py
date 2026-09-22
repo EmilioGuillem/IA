@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# This file has been created (totally or partially) with the assistance of
+# artificial intelligence tools. All content has been generated under the
+# direct supervision of a named individual and the AI.Backbone Orchestrator
+# Compliance framework.
+
 """
 Automated Deployment Script for SopraGP4U Clock In/Out
 =====================================================
@@ -26,12 +31,12 @@ from datetime import datetime
 from pathlib import Path
 
 def run_command(cmd, description="", capture_output=False):
-    """Run a shell command and return success status."""
+    """Run an argument-list command and return success status."""
     print(f"\n>> {description}...")
     
     try:
         if capture_output:
-            result = subprocess.run(cmd, capture_output=True, text=True, shell=True)
+            result = subprocess.run(cmd, capture_output=True, text=True, check=False)
             if result.returncode == 0:
                 print(f"  [OK] {description} completed")
                 return True, result.stdout
@@ -39,7 +44,7 @@ def run_command(cmd, description="", capture_output=False):
                 print(f"  [ERROR] {description} failed: {result.stderr}")
                 return False, result.stderr
         else:
-            result = subprocess.run(cmd, shell=True)
+            result = subprocess.run(cmd, check=False)
             if result.returncode == 0:
                 print(f"  [OK] {description} completed")
                 return True, ""
@@ -58,9 +63,9 @@ def verify_environment():
     print("="*60)
     
     checks = {
-        "Python 3.8+": ("python --version", True),
-        "Selenium": ("python -c 'import selenium'", True),
-        "Chrome Browser": ("where chrome", False),
+        "Python 3.8+": ([sys.executable, "--version"], True),
+        "Selenium": ([sys.executable, "-c", "import selenium"], True),
+        "Chrome Browser": (["where", "chrome"], False),
     }
     
     all_ok = True
@@ -87,7 +92,7 @@ def install_dependencies():
     print("="*60)
     
     success, _ = run_command(
-        f"{sys.executable} -m pip install -r requirements.txt",
+        [sys.executable, "-m", "pip", "install", "-r", "requirements.txt"],
         "Installing Python packages"
     )
     
@@ -114,17 +119,18 @@ def setup_credentials_interactive():
         os.environ['SOPRA_USERNAME'] = username
         os.environ['SOPRA_PASSWORD'] = password
         
-        # Also set system variables
-        subprocess.run(
-            f'setx SOPRA_USERNAME {username}',
-            shell=True,
-            capture_output=True
-        )
-        subprocess.run(
-            f'setx SOPRA_PASSWORD {password}',
-            shell=True,
-            capture_output=True
-        )
+        for variable, value in (
+            ('SOPRA_USERNAME', username),
+            ('SOPRA_PASSWORD', password),
+        ):
+            result = subprocess.run(
+                ['setx', variable, value],
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            if result.returncode != 0:
+                raise RuntimeError(result.stderr.strip() or f"setx failed for {variable}")
         
         print("[OK] Credentials saved")
         return True
@@ -156,12 +162,14 @@ def setup_browser_preference():
     try:
         os.environ['SOPRA_BROWSER'] = browser
         
-        # Also set system variable
-        subprocess.run(
-            f'setx SOPRA_BROWSER {browser}',
-            shell=True,
-            capture_output=True
+        result = subprocess.run(
+            ['setx', 'SOPRA_BROWSER', browser],
+            capture_output=True,
+            text=True,
+            check=False,
         )
+        if result.returncode != 0:
+            raise RuntimeError(result.stderr.strip() or "setx failed for SOPRA_BROWSER")
         
         print(f"[OK] Browser preference saved ({browser})")
         return True
@@ -178,7 +186,7 @@ def test_setup():
     print("="*60)
     
     success, output = run_command(
-        f"{sys.executable} src/test_setup.py",
+        [sys.executable, "src/test_setup.py"],
         "Running connectivity tests"
     )
     
@@ -214,7 +222,7 @@ def setup_scheduled_tasks():
     """
     
     success, _ = run_command(
-        f'powershell -Command "{powershell_cmd}"',
+        ["powershell", "-Command", powershell_cmd],
         "Creating CLOCK-IN task"
     )
     
@@ -227,7 +235,7 @@ def setup_scheduled_tasks():
         """
         
         success, _ = run_command(
-            f'powershell -Command "{powershell_cmd}"',
+            ["powershell", "-Command", powershell_cmd],
             "Creating CLOCK-OUT task"
         )
     

@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# This file has been created (totally or partially) with the assistance of
+# artificial intelligence tools. All content has been generated under the
+# direct supervision of a named individual and the AI.Backbone Orchestrator
+# Compliance framework.
+
 """
 SopraGP4U Automatic Clock In/Out automation script
 =====================================================
@@ -7,8 +12,8 @@ SopraGP4U Automatic Clock In/Out automation script
 This script automates the clock in/out process for SopraGP4U portal.
 
 Features:
-- Automatic clock-in before 10:00 AM
-- Automatic clock-out after 5:00 PM
+- Automatic clock-in from 08:00 to 09:30, with a late-login fallback
+- Automatic clock-out from 17:30 after more than nine hours worked
 - Comprehensive logging to file and console
 - Retry logic for failed attempts
 - Compatible with Windows Task Scheduler
@@ -19,6 +24,7 @@ Date: 2026
 
 import sys
 import time
+import json
 from datetime import datetime
 from pathlib import Path
 
@@ -28,6 +34,10 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from logger_config import setup_logger
 from config.config import (
     SOPRA_URL, MENU_LINK_TEXT, CLOCK_IN_THRESHOLD, CLOCK_OUT_THRESHOLD,
+    CLOCK_IN_START_HOUR, CLOCK_IN_START_MINUTE,
+    CLOCK_IN_END_HOUR, CLOCK_IN_END_MINUTE,
+    CLOCK_OUT_START_HOUR, CLOCK_OUT_START_MINUTE, MIN_WORK_HOURS,
+    STATE_FILE,
     CLOCK_IN_BUTTON_ID, CLOCK_OUT_BUTTON_ID, SOPRA_USERNAME, SOPRA_PASSWORD,
     WAIT_TIMEOUT, PAGE_LOAD_TIMEOUT, MAX_RETRIES, RETRY_DELAY, DRY_RUN,
     HEADLESS_MODE, CHROME_OPTIONS, EDGE_OPTIONS, BROWSER,
@@ -87,8 +97,50 @@ class SopraClockInAutomation:
         """Initialize the automation class."""
         self.driver = None
         self.wait = None
-        self.current_hour = datetime.now().hour
+        now = datetime.now()
+        self.current_hour = now.hour
+        self.current_minute = now.minute
+        self.state = self._load_state(now)
         self.action_type = self._determine_action()
+
+    def _load_state(self, now):
+        """Load today's successful actions and discard stale daily state."""
+        empty_state = {"date": now.date().isoformat(), "clock_in_at": None, "clock_out_at": None}
+        if not STATE_FILE.exists():
+            return empty_state
+
+        try:
+            with open(STATE_FILE, 'r', encoding='utf-8') as state_file:
+                state = json.load(state_file)
+        except (OSError, json.JSONDecodeError):
+            logger.warning("Could not read clock state; starting with empty state")
+            return empty_state
+
+        if state.get("date") != now.date().isoformat():
+            return empty_state
+
+        return {
+            "date": state.get("date"),
+            "clock_in_at": state.get("clock_in_at"),
+            "clock_out_at": state.get("clock_out_at"),
+        }
+
+    def _save_state(self, timestamp, action):
+        """Persist an action only after its browser flow succeeds."""
+        key = "clock_in_at" if action == "CLOCK_IN" else "clock_out_at"
+        self.state[key] = timestamp.isoformat(timespec='seconds')
+        with open(STATE_FILE, 'w', encoding='utf-8') as state_file:
+            json.dump(self.state, state_file, indent=2)
+
+    def _clock_in_timestamp(self):
+        value = self.state.get("clock_in_at")
+        if not value:
+            return None
+        try:
+            return datetime.fromisoformat(value)
+        except ValueError:
+            logger.warning("Ignoring invalid clock-in timestamp in state")
+            return None
         
     def _determine_action(self):
         """
@@ -97,12 +149,26 @@ class SopraClockInAutomation:
         Returns:
             str: 'CLOCK_IN', 'CLOCK_OUT', or 'NONE'
         """
-        if self.current_hour < CLOCK_IN_THRESHOLD:
-            return 'CLOCK_IN'
-        elif self.current_hour >= CLOCK_OUT_THRESHOLD:
-            return 'CLOCK_OUT'
-        else:
+        current_minutes = self.current_hour * 60 + self.current_minute
+        clock_in_start = CLOCK_IN_START_HOUR * 60 + CLOCK_IN_START_MINUTE
+        clock_out_start = CLOCK_OUT_START_HOUR * 60 + CLOCK_OUT_START_MINUTE
+
+        if self.state.get("clock_out_at"):
             return 'NONE'
+
+        clock_in_at = self._clock_in_timestamp()
+        if clock_in_at is None:
+            if current_minutes >= clock_in_start:
+                # Preferred window, or immediate late-login fallback.
+                if current_minutes > CLOCK_IN_END_HOUR * 60 + CLOCK_IN_END_MINUTE:
+                    logger.warning("Clock-in window missed; using the nearest available check")
+                return 'CLOCK_IN'
+            return 'NONE'
+
+        elapsed_hours = (datetime.now() - clock_in_at).total_seconds() / 3600
+        if current_minutes >= clock_out_start and elapsed_hours > MIN_WORK_HOURS:
+            return 'CLOCK_OUT'
+        return 'NONE'
     
     def setup_driver(self):
         """
@@ -392,9 +458,9 @@ class SopraClockInAutomation:
             logger.info("Trying alternative selectors for menu link...")
             
             # Try partial link text
-            menu_link = self.wait.until(
+            menu_link = WebDriverWait(self.driver, 2).until(
                 EC.element_to_be_clickable((By.PARTIAL_LINK_TEXT, "Registro")),
-                timeout=2
+                message="Alternative menu link not found"
             )
             
             if DRY_RUN:
@@ -430,7 +496,7 @@ class SopraClockInAutomation:
             
             button = self.wait.until(
                 EC.element_to_be_clickable(selector_tuple),
-                timeout=5
+                message=f"Button with selector {selector_tuple} not found"
             )
             
             if DRY_RUN:
@@ -476,7 +542,7 @@ class SopraClockInAutomation:
             button_text = "clock-in" if self.action_type == 'CLOCK_IN' else "clock-out"
             
             # Try button by text (case-insensitive)
-            button = self.wait.until(
+            button = WebDriverWait(self.driver, 5).until(
                 EC.element_to_be_clickable((By.XPATH, f"//button[contains(translate(text(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), '{button_text}')]")),
                 message=f"Button with text '{button_text}' not found"
             )
@@ -537,6 +603,10 @@ class SopraClockInAutomation:
                 # Click clock button
                 if not self.click_clock_button():
                     raise Exception("Failed to click clock button")
+
+                if not DRY_RUN:
+                    self._save_state(datetime.now(), self.action_type)
+                    logger.info(f"Saved successful {self.action_type} state")
                 
                 logger.info("="*80)
                 logger.info("Automation completed successfully!")

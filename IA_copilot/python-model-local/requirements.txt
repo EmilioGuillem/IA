@@ -1,0 +1,8 @@
+# This file has been created (totally or partially) with the assistance of artificial intelligence tools.
+# All content has been generated under the direct supervision of a named individual,
+# and under the AI.Backbone Orchestrator Compliance framework
+
+# Core runtime intentionally has no mandatory ML dependencies.
+# Install optional Hugging Face support with:
+#   python -m pip install -e ".[hf,test]"
+pytest>=8.0.0

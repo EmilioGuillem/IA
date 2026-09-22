@@ -1,3 +1,8 @@
+# This file has been created (totally or partially) with the assistance of
+# artificial intelligence tools. All content has been generated under the
+# direct supervision of a named individual and the AI.Backbone Orchestrator
+# Compliance framework.
+
 # ===================================================================
 # Setup Helper Script for SopraGP4U Clock In/Out Automation
 # ===================================================================
@@ -67,40 +72,33 @@ if ($SetCredentials -or $All) {
 # Create scheduled tasks
 if ($CreateScheduledTasks -or $All) {
     Write-Host ""
-    Write-Host "Creating scheduled tasks..." -ForegroundColor Cyan
-    
-    $action = New-ScheduledTaskAction -Execute (Join-Path $ProjectDir "scheduled_clockin.bat")
-    
-    # CLOCK IN task (8:00 AM)
-    Write-Host "Creating 'SopraGP4U Clock In' task at 08:00..." -ForegroundColor Gray
-    $trigger = New-ScheduledTaskTrigger -Daily -At "08:00"
-    
+    Write-Host "Creating hourly logon task..." -ForegroundColor Cyan
+
+    $taskName = "SopraGP4U Hourly Check"
+    $runner = Join-Path $ProjectDir "hourly_clockin.ps1"
+    $powershell = (Get-Command powershell.exe).Source
+    $action = New-ScheduledTaskAction `
+        -Execute $powershell `
+        -Argument "-NoProfile -ExecutionPolicy Bypass -File `"$runner`""
+    $trigger = New-ScheduledTaskTrigger -AtLogOn -User $env:USERNAME
+    $settings = New-ScheduledTaskSettingsSet `
+        -MultipleInstances IgnoreNew `
+        -StartWhenAvailable
+
     try {
-        Register-ScheduledTask -TaskName "SopraGP4U Clock In" `
+        Register-ScheduledTask -TaskName $taskName `
             -Action $action `
             -Trigger $trigger `
-            -RunLevel Highest `
+            -Settings $settings `
+            -Description "Comprueba SopraGP4U al iniciar sesión y cada hora." `
             -Force | Out-Null
-        Write-Host "[OK] Clock In task created" -ForegroundColor Green
+
+        Unregister-ScheduledTask -TaskName "SopraGP4U Clock In" -Confirm:$false -ErrorAction SilentlyContinue
+        Unregister-ScheduledTask -TaskName "SopraGP4U Clock Out" -Confirm:$false -ErrorAction SilentlyContinue
+        Write-Host "[OK] Hourly logon task created: $taskName" -ForegroundColor Green
     }
     catch {
-        Write-Host "[WARNING] Clock In task creation failed (may already exist): $_" -ForegroundColor Yellow
-    }
-    
-    # CLOCK OUT task (5:15 PM)
-    Write-Host "Creating 'SopraGP4U Clock Out' task at 17:15..." -ForegroundColor Gray
-    $trigger = New-ScheduledTaskTrigger -Daily -At "17:15"
-    
-    try {
-        Register-ScheduledTask -TaskName "SopraGP4U Clock Out" `
-            -Action $action `
-            -Trigger $trigger `
-            -RunLevel Highest `
-            -Force | Out-Null
-        Write-Host "[OK] Clock Out task created" -ForegroundColor Green
-    }
-    catch {
-        Write-Host "[WARNING] Clock Out task creation failed (may already exist): $_" -ForegroundColor Yellow
+        Write-Host "[ERROR] Hourly task creation failed: $_" -ForegroundColor Red
     }
 }
 

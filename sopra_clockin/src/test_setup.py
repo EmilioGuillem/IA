@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# This file has been created (totally or partially) with the assistance of
+# artificial intelligence tools. All content has been generated under the
+# direct supervision of a named individual and the AI.Backbone Orchestrator
+# Compliance framework.
+
 """
 Test script to verify Selenium setup and portal connectivity
 =====================================================
@@ -148,11 +153,10 @@ def test_full_navigation():
             return True
             
         except Exception as e:
-            # If page load fails, just assume portal is not accessible (might be VPN-only)
             logger.warning(f"  [WARNING] Portal navigation failed: {str(e)}")
-            logger.info("  -> This may be expected if portal requires VPN or specific network")
+            logger.info("  -> Check VPN, network access, and portal availability")
             driver.quit()
-            return True  # Return True anyway - browser works, just can't reach portal
+            return False
         
     except Exception as e:
         logger.error(f"[ERROR] Full navigation test failed: {str(e)}")

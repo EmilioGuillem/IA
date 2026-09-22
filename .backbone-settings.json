@@ -1,0 +1,34 @@
+{
+  "projectName": "ProjectAI",
+  "projectType": "brownfield",
+  "sdlcPhases": [
+    "analysis",
+    "planning",
+    "solutioning",
+    "implementation",
+    "testing",
+    "deployment"
+  ],
+  "sdlcDepth": "full",
+  "technicalStack": {
+    "frontend": [
+      "angular",
+      "other"
+    ],
+    "backend": [
+      "python",
+      "java",
+      "nodejs"
+    ]
+  },
+  "cloudProviders": [
+    "none"
+  ],
+  "integrations": [
+    "github"
+  ],
+  "needsSecurityAuditing": false,
+  "needsBrandCompliance": false,
+  "needsDocumentGeneration": true,
+  "needsAccessibility": true
+}

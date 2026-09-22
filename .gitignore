@@ -1,3 +1,12 @@
 *.pyc
 *.log
 src/llm
+# --- APM runtime artifacts (auto-added by install-apm-bundle) ---
+__pycache__/
+*.pyc
+outputs/knowledge-plane/
+outputs/runs/_interactive/
+.state-backups/
+.apm-install-tmp-*/
+.apm-bootstrap-tmp/
+# --- end APM runtime artifacts ---

@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# This file has been created (totally or partially) with the assistance of
+# artificial intelligence tools. All content has been generated under the
+# direct supervision of a named individual and the AI.Backbone Orchestrator
+# Compliance framework.
+
 """
 Quick Setup Wizard for SopraGP4U Clock In/Out Automation
 =====================================================
@@ -57,8 +62,8 @@ def setup_credentials():
     """Setup credentials as environment variables."""
     print_header("Setting Up Credentials")
     
-    print("Your credentials will be stored in the configuration file.")
-    print("They will be available for this script to use.\n")
+    print("Credentials will not be stored in configuration files.")
+    print("They must be configured as Windows environment variables.\n")
     
     username = input("Enter your SopraGP4U username: ").strip()
     
@@ -72,26 +77,10 @@ def setup_credentials():
         print("[ERROR] Password cannot be empty\n")
         return False
     
-    # Save to config file
-    config_file = Path("config/config.json")
-    config_data = {}
-    if config_file.exists():
-        try:
-            with open(config_file, 'r', encoding='utf-8') as f:
-                config_data = json.load(f)
-        except:
-            pass
-    
-    config_data['username'] = username
-    config_data['password'] = password
-    
-    try:
-        config_file.parent.mkdir(exist_ok=True)
-        with open(config_file, 'w', encoding='utf-8') as f:
-            json.dump(config_data, f, indent=2)
-        print("\n[OK] Credentials configured and saved")
-    except Exception as e:
-        print(f"\n[WARNING] Could not save config: {e}")
+    os.environ['SOPRA_USERNAME'] = username
+    os.environ['SOPRA_PASSWORD'] = password
+    print("\n[OK] Credentials configured for this setup process")
+    print("[WARNING] Configure them persistently for Task Scheduler.")
     
     return True
 
