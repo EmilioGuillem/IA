@@ -1,0 +1,1 @@
+{"timestamp": "2026-09-23T14:30:34.620567+00:00", "model": "echo", "user": "Hola", "assistant": "Echo backend ready. Received: Hola", "text": "user: Hola\nassistant: Echo backend ready. Received: Hola", "metadata": {"source": "cli_run"}}

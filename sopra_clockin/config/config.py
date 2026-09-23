@@ -31,7 +31,16 @@ config_data = load_config()
 
 # URLs
 SOPRA_URL = "https://sprportal-mcp.soprahronline.com/SopraGP4U/WAW05B02"
-MENU_LINK_TEXT = "Registro de entrada/salida"  # No longer needed - direct portal access
+MENU_LINK_TEXT = "Registro de entrada / salida"
+MENU_LINK_SELECTOR = {
+    'method': 'xpath',
+    'value': """//*[contains(
+        translate(normalize-space(string(.)),
+        'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+        'abcdefghijklmnopqrstuvwxyz'),
+        'registro de entrada'
+    )]/ancestor-or-self::*[self::a or self::button or @role='link' or @role='button'][1]""",
+}
 
 # Time windows and minimum working duration.
 CLOCK_IN_START_HOUR = 8
@@ -45,16 +54,22 @@ MIN_WORK_HOURS = 9
 CLOCK_IN_THRESHOLD = 10
 CLOCK_OUT_THRESHOLD = 17
 
-# Button selectors - flexible configuration
-CLOCK_IN_SELECTOR = config_data.get('clock_in', {'method': 'id', 'value': 'CLOCK-IN'})
-CLOCK_OUT_SELECTOR = config_data.get('clock_out', {'method': 'id', 'value': 'CLOCK-OUT'})
+# Element selectors - flexible configuration.
+CLOCK_IN_SELECTOR = config_data.get('clock_in', {
+    'method': 'css',
+    'value': 'button.button-success.register-button',
+})
+CLOCK_OUT_SELECTOR = config_data.get('clock_out', {
+    'method': 'css',
+    'value': 'button.button-danger.register-button',
+})
 
 # Legacy IDs for backward compatibility
 CLOCK_IN_BUTTON_ID = CLOCK_IN_SELECTOR.get('value', 'CLOCK-IN') if CLOCK_IN_SELECTOR.get('method') == 'id' else 'CLOCK-IN'
 CLOCK_OUT_BUTTON_ID = CLOCK_OUT_SELECTOR.get('value', 'CLOCK-OUT') if CLOCK_OUT_SELECTOR.get('method') == 'id' else 'CLOCK-OUT'
 
-# Browser selection
-BROWSER = config_data.get('browser', os.getenv("SOPRA_BROWSER", "chrome")).lower()
+# Browser selection. Edge is the default browser for this environment.
+BROWSER = os.getenv("SOPRA_BROWSER", config_data.get('browser', "edge")).lower()
 
 # Chrome driver options
 CHROME_OPTIONS = {

@@ -6,16 +6,26 @@
 $ErrorActionPreference = "Stop"
 $ProjectDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $LogFile = Join-Path $ProjectDir "logs\hourly_runner.log"
-$Python = (Get-Command python.exe -ErrorAction Stop).Source
 
 function Write-RunnerLog([string]$Message) {
     $line = "{0} {1}" -f (Get-Date -Format "yyyy-MM-dd HH:mm:ss"), $Message
+    Write-Host $line
     Add-Content -Path $LogFile -Value $line -Encoding UTF8
 }
 
+try {
+    $Python = (Get-Command python.exe -ErrorAction Stop).Source
+}
+catch {
+    Write-RunnerLog "FATAL: python.exe not found in PATH. Install Python or fix PATH, then re-run."
+    Read-Host "Press Enter to close"
+    exit 1
+}
+
 Set-Location $ProjectDir
+$env:SOPRA_BROWSER = "edge"
 $env:SOPRA_DRY_RUN = "false"
-Write-RunnerLog "Hourly runner started for user $env:USERNAME"
+Write-RunnerLog "Hourly runner started for user $env:USERNAME (python: $Python)"
 
 while ($true) {
     try {
@@ -27,5 +37,6 @@ while ($true) {
         Write-RunnerLog "Hourly check failed: $($_.Exception.Message)"
     }
 
+    Write-RunnerLog "Sleeping for 1 hour until next check"
     Start-Sleep -Seconds 3600
 }

@@ -11,7 +11,7 @@ Test script to verify Selenium setup and portal connectivity
 
 This script tests:
 1. Selenium WebDriver installation
-2. Chrome browser availability
+2. Configured browser availability
 3. Network connectivity to SopraGP4U
 4. Portal page loading
 
@@ -26,7 +26,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from logger_config import setup_logger
-from config.config import SOPRA_URL, WAIT_TIMEOUT
+from config.config import SOPRA_URL, WAIT_TIMEOUT, BROWSER
 
 logger = setup_logger(__name__)
 
@@ -57,29 +57,36 @@ def test_imports():
     return True
 
 
-def test_chrome_driver():
-    """Test if Chrome driver can be initialized."""
-    logger.info("\nTesting Chrome WebDriver initialization...")
+def test_browser_driver():
+    """Test if the configured browser driver can be initialized."""
+    logger.info(f"\nTesting {BROWSER.upper()} WebDriver initialization...")
     
     try:
         from selenium import webdriver
         from selenium.webdriver.chrome.options import Options
+        from selenium.webdriver.edge.options import Options as EdgeOptions
         
-        options = Options()
+        if BROWSER == "edge":
+            options = EdgeOptions()
+            driver_factory = webdriver.Edge
+        else:
+            options = Options()
+            driver_factory = webdriver.Chrome
+
         options.add_argument("--headless")
         options.add_argument("--no-sandbox")
         
-        driver = webdriver.Chrome(options=options)
-        version = driver.execute_script("return navigator.chromeVersion")
-        logger.info(f"[OK] Chrome WebDriver initialized successfully")
-        logger.info(f"[OK] Chrome version: {version}")
+        driver = driver_factory(options=options)
+        user_agent = driver.execute_script("return navigator.userAgent")
+        logger.info(f"[OK] {BROWSER.upper()} WebDriver initialized successfully")
+        logger.info(f"[OK] Browser user agent: {user_agent}")
         
         driver.quit()
         return True
         
     except Exception as e:
-        logger.error(f"[ERROR] Chrome WebDriver initialization failed: {str(e)}")
-        logger.info("  Make sure Google Chrome is installed")
+        logger.error(f"[ERROR] {BROWSER.upper()} WebDriver initialization failed: {str(e)}")
+        logger.info(f"  Make sure {BROWSER} is installed")
         return False
 
 
@@ -107,16 +114,23 @@ def test_full_navigation():
     try:
         from selenium import webdriver
         from selenium.webdriver.chrome.options import Options
+        from selenium.webdriver.edge.options import Options as EdgeOptions
         from selenium.webdriver.common.by import By
         from selenium.webdriver.support.ui import WebDriverWait
         from selenium.webdriver.support import expected_conditions as EC
         
-        options = Options()
+        if BROWSER == "edge":
+            options = EdgeOptions()
+            driver_factory = webdriver.Edge
+        else:
+            options = Options()
+            driver_factory = webdriver.Chrome
+
         options.add_argument("--headless")
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
         
-        driver = webdriver.Chrome(options=options)
+        driver = driver_factory(options=options)
         driver.set_page_load_timeout(15)
         
         logger.info(f"  -> Navigating to {SOPRA_URL}")
@@ -171,7 +185,7 @@ def main():
     
     results = {
         "Imports": test_imports(),
-        "Chrome Driver": test_chrome_driver(),
+        f"{BROWSER.upper()} Driver": test_browser_driver(),
         "Portal Connectivity": test_portal_connectivity(),
         "Full Navigation": test_full_navigation(),
     }

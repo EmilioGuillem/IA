@@ -148,7 +148,7 @@ Edita `config/config.py` para personalizar:
 
 ```python
 SOPRA_URL = "https://sprportal-mcp.soprahronline.com/SopraGP4U/"
-MENU_LINK_TEXT = "Registro de entrada/salida"
+MENU_LINK_TEXT = "Registro de entrada / salida"
 CLOCK_IN_START_HOUR = 8      # Inicio de ventana de CLOCK-IN
 CLOCK_IN_END_HOUR = 9        # Fin de ventana: 09:30
 CLOCK_OUT_START_HOUR = 17    # Nunca antes de 17:30
@@ -181,8 +181,8 @@ Los logs se guardan en la carpeta `logs/`:
 2026-03-26 09:45:36 - __main__ - INFO - Successfully navigated to portal
 2026-03-26 09:45:36 - __main__ - INFO - Attempting to login...
 2026-03-26 09:45:38 - __main__ - INFO - Login successful
-2026-03-26 09:45:38 - __main__ - INFO - Looking for menu link: 'Registro de entrada/salida'
-2026-03-26 09:45:39 - __main__ - INFO - Successfully clicked on menu link: Registro de entrada/salida
+2026-03-26 09:45:38 - __main__ - INFO - Looking for menu link: 'Registro de entrada / salida'
+2026-03-26 09:45:39 - __main__ - INFO - Successfully clicked on menu link: Registro de entrada / salida
 2026-03-26 09:45:39 - __main__ - INFO - Looking for CLOCK_IN button...
 2026-03-26 09:45:40 - __main__ - INFO - Successfully clicked CLOCK_IN button
 2026-03-26 09:45:40 - __main__ - INFO - ================================================================================

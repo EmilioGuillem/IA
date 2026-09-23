@@ -6,7 +6,7 @@ from code_agent.cli import main
 
 
 def test_cli_run_echo_backend(capsys) -> None:
-    exit_code = main(["run", "--message", "ping", "--no-log"])
+    exit_code = main(["run", "--backend", "echo", "--message", "ping", "--no-log"])
     captured = capsys.readouterr()
     assert exit_code == 0
     assert "Echo backend ready" in captured.out

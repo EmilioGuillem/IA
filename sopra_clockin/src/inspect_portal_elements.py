@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# This file has been created (totally or partially) with the assistance of
+# artificial intelligence tools. All content has been generated under the
+# direct supervision of a named individual and the AI.Backbone Orchestrator
+# Compliance framework.
+
 """
 Portal Element Inspector Tool
 =====================================================
@@ -56,10 +61,10 @@ def inspect_portal():
             logger.info("SELECT BROWSER")
             logger.info("="*80)
             print("\nWhich browser would you like to use?")
-            print("  1. Chrome (default)")
-            print("  2. Edge")
+            print("  1. Edge (default)")
+            print("  2. Chrome")
             choice = input("\nEnter choice (1 or 2) [1]: ").strip() or "1"
-            browser = "edge" if choice == "2" else "chrome"
+            browser = "chrome" if choice == "2" else "edge"
         
         # Setup browser
         options = None

@@ -90,17 +90,17 @@ def setup_browser():
     print_header("Select Browser")
     
     print("Which browser would you like to use for automation?\n")
-    print("  1. Chrome (default)")
-    print("  2. Edge\n")
+    print("  1. Edge (default)")
+    print("  2. Chrome\n")
     
     choice = input("Enter your choice (1 or 2): ").strip()
     
     if choice == "2":
-        browser = "edge"
-        print("\n[OK] Edge browser selected")
-    else:
         browser = "chrome"
         print("\n[OK] Chrome browser selected")
+    else:
+        browser = "edge"
+        print("\n[OK] Edge browser selected")
     
     # Save to config file
     config_file = Path("config/config.json")

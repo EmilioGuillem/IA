@@ -147,17 +147,17 @@ def setup_browser_preference():
     print("="*60)
     
     print("\nWhich browser would you like to use for automation?")
-    print("  1. Chrome (default)")
-    print("  2. Edge\n")
+    print("  1. Edge (default)")
+    print("  2. Chrome\n")
     
     choice = input("Enter your choice (1 or 2): ").strip()
     
     if choice == "2":
-        browser = "edge"
-        print("\n[OK] Edge browser selected")
-    else:
         browser = "chrome"
         print("\n[OK] Chrome browser selected")
+    else:
+        browser = "edge"
+        print("\n[OK] Edge browser selected")
     
     try:
         os.environ['SOPRA_BROWSER'] = browser

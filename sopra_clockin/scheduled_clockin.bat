@@ -39,13 +39,8 @@ echo ===================================================================== >> "%
 REM Change to project directory
 cd /d "%PROJECT_DIR%"
 
-REM Set browser preference (options: chrome, edge)
-REM Uncomment and modify the line below to use Edge instead of Chrome:
-REM set SOPRA_BROWSER=edge
-REM Default is Chrome if not set
-if not defined SOPRA_BROWSER (
-    set SOPRA_BROWSER=chrome
-)
+REM Scheduled execution always uses Edge.
+set SOPRA_BROWSER=edge
 
 REM Scheduled execution is real, not shadow mode.
 set SOPRA_DRY_RUN=false

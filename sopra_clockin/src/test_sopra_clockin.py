@@ -118,6 +118,14 @@ class TestActionDetermination(unittest.TestCase):
         automation.current_minute = 30
         self.assertEqual(automation._determine_action(), 'CLOCK_IN')
 
+    def test_missing_state_after_clock_out_start_uses_clock_out(self):
+        """Test that a late run after checkout time clicks clock-out, not clock-in."""
+        automation = SopraClockInAutomation()
+        automation.current_hour = 17
+        automation.current_minute = 31
+        automation.state['clock_in_at'] = None
+        self.assertEqual(automation._determine_action(), 'CLOCK_OUT')
+
 
 class TestDriverSetup(unittest.TestCase):
     """Test driver setup functionality."""
@@ -228,26 +236,27 @@ class TestButtonClicking(unittest.TestCase):
     def test_click_clock_button_success(self, mock_sleep):
         """Test successful button click."""
         mock_button = Mock()
-        self.automation.wait.until.return_value = mock_button
+        self.automation._find_element_in_frames = Mock(return_value=mock_button)
+        self.automation._click_element = Mock()
         
         with patch('sopra_clockin.DRY_RUN', False):
             result = self.automation.click_clock_button()
             
             self.assertTrue(result)
-            mock_button.click.assert_called_once()
-            mock_sleep.assert_called_once_with(2)
+            self.automation._click_element.assert_called_once_with(mock_button, 'CLOCK_IN button')
     
     @patch('sopra_clockin.time.sleep')
     def test_click_clock_button_dry_run(self, mock_sleep):
         """Test button click in dry run mode."""
         mock_button = Mock()
-        self.automation.wait.until.return_value = mock_button
+        self.automation._find_element_in_frames = Mock(return_value=mock_button)
+        self.automation._click_element = Mock()
         
         with patch('sopra_clockin.DRY_RUN', True):
             result = self.automation.click_clock_button()
             
             self.assertTrue(result)
-            mock_button.click.assert_not_called()
+            self.automation._click_element.assert_called_once_with(mock_button, 'CLOCK_IN button')
             mock_sleep.assert_not_called()
     
     def test_click_clock_button_no_action(self):
@@ -259,17 +268,24 @@ class TestButtonClicking(unittest.TestCase):
         self.assertTrue(result)
         self.automation.wait.until.assert_not_called()
 
-    @patch('sopra_clockin.WebDriverWait')
-    def test_alternative_menu_uses_valid_short_wait(self, mock_wait_class):
-        fallback_wait = Mock()
-        fallback_wait.until.return_value = Mock()
-        mock_wait_class.return_value = fallback_wait
+    def test_menu_returns_false_when_menu_and_clock_control_missing(self):
+        self.automation._find_element_in_frames = Mock(return_value=None)
+        self.automation._save_debug_snapshot = Mock()
 
-        result = self.automation._try_alternative_menu_links()
+        result = self.automation.click_menu_link()
+
+        self.assertFalse(result)
+        self.automation._save_debug_snapshot.assert_called_once()
+
+    def test_menu_clicks_when_found_in_frames(self):
+        menu_link = Mock()
+        self.automation._find_element_in_frames = Mock(return_value=menu_link)
+        self.automation._click_element = Mock()
+
+        result = self.automation.click_menu_link()
 
         self.assertTrue(result)
-        mock_wait_class.assert_called_once_with(self.automation.driver, 2)
-        fallback_wait.until.assert_called_once()
+        self.automation._click_element.assert_called_once_with(menu_link, 'menu link Registro de entrada / salida')
 
     @patch('sopra_clockin.WebDriverWait')
     def test_alternative_button_uses_valid_short_wait(self, mock_wait_class):

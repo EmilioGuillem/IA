@@ -1,5 +1,11 @@
+# This file has been created (totally or partially) with the assistance of
+# artificial intelligence tools. All content has been generated under the
+# direct supervision of a named individual and the AI.Backbone Orchestrator
+# Compliance framework.
+
 # Python
 __pycache__/
+.pytest_cache/
 *.py[cod]
 *$py.class
 *.so
@@ -42,6 +48,7 @@ Thumbs.db
 logs/*.log
 logs/schedule_run.log
 logs/portal_inspection_*.json
+logs/debug_*
 *.tmp
 *.bak
 
@@ -53,3 +60,5 @@ chromedriver.exe
 # Credentials (important!)
 SOPRA_USERNAME
 SOPRA_PASSWORD
+
+*.gguf

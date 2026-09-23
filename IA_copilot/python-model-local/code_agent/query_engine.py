@@ -23,13 +23,19 @@ class QueryEngine:
     def __init__(
         self,
         model_path: str | Path | None = None,
-        backend: str = "echo",
+        backend: str = "llama-cpp",
         system_prompt: str = SYSTEM_PROMPT,
-        device: str | None = None,
+        device: str | None = "cpu",
+        adapter_path: str | Path | None = None,
         model_backend: ModelBackend | None = None,
     ) -> None:
         self.system_prompt = system_prompt
-        self.backend = model_backend or create_backend(backend=backend, model_path=model_path, device=device)
+        self.backend = model_backend or create_backend(
+            backend=backend,
+            model_path=model_path,
+            device=device,
+            adapter_path=adapter_path,
+        )
 
     def generate(
         self,

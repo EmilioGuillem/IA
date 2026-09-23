@@ -41,11 +41,12 @@ from config.config import (
     CLOCK_IN_BUTTON_ID, CLOCK_OUT_BUTTON_ID, SOPRA_USERNAME, SOPRA_PASSWORD,
     WAIT_TIMEOUT, PAGE_LOAD_TIMEOUT, MAX_RETRIES, RETRY_DELAY, DRY_RUN,
     HEADLESS_MODE, CHROME_OPTIONS, EDGE_OPTIONS, BROWSER,
-    CLOCK_IN_SELECTOR, CLOCK_OUT_SELECTOR
+    CLOCK_IN_SELECTOR, CLOCK_OUT_SELECTOR, MENU_LINK_SELECTOR
 )
 
 try:
     from selenium import webdriver
+    from selenium.common.exceptions import NoSuchElementException, StaleElementReferenceException
     from selenium.webdriver.common.by import By
     from selenium.webdriver.support.ui import WebDriverWait
     from selenium.webdriver.support import expected_conditions as EC
@@ -158,6 +159,9 @@ class SopraClockInAutomation:
 
         clock_in_at = self._clock_in_timestamp()
         if clock_in_at is None:
+            if current_minutes >= clock_out_start:
+                logger.warning("No local clock-in state found; current time is past clock-out start, using CLOCK_OUT")
+                return 'CLOCK_OUT'
             if current_minutes >= clock_in_start:
                 # Preferred window, or immediate late-login fallback.
                 if current_minutes > CLOCK_IN_END_HOUR * 60 + CLOCK_IN_END_MINUTE:
@@ -266,7 +270,14 @@ class SopraClockInAutomation:
         try:
             logger.info(f"Navigating to {SOPRA_URL}")
             self.driver.get(SOPRA_URL)
-            time.sleep(2)  # Wait for page to load
+            time.sleep(3)  # Wait for page to load and React routing
+            if "WAW05B02" not in self.driver.current_url:
+                logger.warning(
+                    "Portal redirected to %s; retrying direct clock page",
+                    self.driver.current_url,
+                )
+                self.driver.get(SOPRA_URL)
+                time.sleep(3)
             logger.info("Successfully navigated to portal")
             return True
             
@@ -416,36 +427,88 @@ class SopraClockInAutomation:
         except Exception as e:
             logger.error(f"Login failed: {str(e)}", exc_info=True)
             return False
+
+    def _save_debug_snapshot(self, reason):
+        """Persist the current browser view for diagnosing selector failures."""
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        html_path = STATE_FILE.parent / f"debug_{timestamp}.html"
+        screenshot_path = STATE_FILE.parent / f"debug_{timestamp}.png"
+
+        try:
+            self.driver.switch_to.default_content()
+            frame_count = len(self.driver.find_elements(By.CSS_SELECTOR, "iframe, frame"))
+            logger.error(
+                "%s. URL=%r title=%r top-level frames=%s",
+                reason,
+                self.driver.current_url,
+                self.driver.title,
+                frame_count,
+            )
+            html_path.write_text(self.driver.page_source, encoding="utf-8")
+            self.driver.save_screenshot(str(screenshot_path))
+            logger.error("Saved debug HTML to %s and screenshot to %s", html_path, screenshot_path)
+        except Exception as e:
+            logger.error("Could not save debug snapshot: %s", str(e))
+
+    def _find_element_in_frames(self, locator, depth=0, max_depth=6):
+        """Find an element in the current document or recursively in frames."""
+        try:
+            return self.driver.find_element(*locator)
+        except NoSuchElementException:
+            pass
+
+        if depth >= max_depth:
+            return None
+
+        frames = self.driver.find_elements(By.CSS_SELECTOR, "iframe, frame")
+        for index in range(len(frames)):
+            try:
+                frames = self.driver.find_elements(By.CSS_SELECTOR, "iframe, frame")
+                self.driver.switch_to.frame(frames[index])
+                element = self._find_element_in_frames(locator, depth + 1, max_depth)
+                if element is not None:
+                    return element
+                self.driver.switch_to.parent_frame()
+            except (NoSuchElementException, StaleElementReferenceException):
+                self.driver.switch_to.default_content()
+
+        return None
+
+    def _click_element(self, element, description):
+        """Click using JavaScript after scrolling the element into view."""
+        if DRY_RUN:
+            logger.info(f"[DRY RUN] Would click {description}")
+            return
+
+        logger.info("Clicking %s", description)
+        self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", element)
+        self.driver.execute_script("arguments[0].click();", element)
+        time.sleep(2)
     
     def click_menu_link(self):
         """
-        Click on the 'Registro de entrada/salida' menu link.
+        Click on the 'Registro de entrada / salida' menu link.
         
         Returns:
             bool: True if successful or not needed, False otherwise
         """
-        try:
-            logger.info(f"Looking for menu link: '{MENU_LINK_TEXT}'")
-            
-            # Try to find the link by text
-            menu_link = self.wait.until(
-                EC.element_to_be_clickable((By.LINK_TEXT, MENU_LINK_TEXT)),
-                message=f"Menu link '{MENU_LINK_TEXT}' not found"
-            )
-            
-            if DRY_RUN:
-                logger.info(f"[DRY RUN] Would click on menu link: {MENU_LINK_TEXT}")
-            else:
-                menu_link.click()
-                time.sleep(2)  # Wait for page transition
-                logger.info(f"Successfully clicked on menu link: {MENU_LINK_TEXT}")
-            
+        logger.info(f"Looking for menu link: '{MENU_LINK_TEXT}'")
+        self.driver.switch_to.default_content()
+        menu_link = self._find_element_in_frames(get_selector_tuple(MENU_LINK_SELECTOR))
+
+        if menu_link is not None:
+            logger.info("Menu link HTML: %s", menu_link.get_attribute("outerHTML"))
+            self._click_element(menu_link, f"menu link {MENU_LINK_TEXT}")
             return True
-            
-        except Exception as e:
-            logger.info(f"Menu link not found ({str(e)}) - assuming we're already on the clock page")
-            # Try alternative selectors
-            return self._try_alternative_menu_links()
+
+        selector_dict = CLOCK_IN_SELECTOR if self.action_type == 'CLOCK_IN' else CLOCK_OUT_SELECTOR
+        clock_element = self._find_element_in_frames(get_selector_tuple(selector_dict))
+        if clock_element is not None:
+            logger.info("Menu link not found, but target clock control is already available")
+            return True
+
+        self._save_debug_snapshot("Neither menu link nor target clock control was found")
+        return False
     
     def _try_alternative_menu_links(self):
         """
@@ -454,27 +517,14 @@ class SopraClockInAutomation:
         Returns:
             bool: True if successful or not needed, False otherwise
         """
-        try:
-            logger.info("Trying alternative selectors for menu link...")
-            
-            # Try partial link text
-            menu_link = WebDriverWait(self.driver, 2).until(
-                EC.element_to_be_clickable((By.PARTIAL_LINK_TEXT, "Registro")),
-                message="Alternative menu link not found"
-            )
-            
-            if DRY_RUN:
-                logger.info("[DRY RUN] Would click on alternative menu link")
-            else:
-                menu_link.click()
-                time.sleep(2)
-                logger.info("Successfully clicked on alternative menu link")
-            
-            return True
-            
-        except Exception as e:
-            logger.info(f"Menu link not found with alternative selectors - assuming already on clock page")
-            return True  # Assume we're already on the correct page
+        logger.info("Trying alternative selectors for menu link...")
+        self.driver.switch_to.default_content()
+        menu_link = self._find_element_in_frames(get_selector_tuple(MENU_LINK_SELECTOR))
+        if menu_link is None:
+            return False
+
+        self._click_element(menu_link, "alternative menu link")
+        return True
     
     def click_clock_button(self):
         """
@@ -491,31 +541,20 @@ class SopraClockInAutomation:
         selector_dict = CLOCK_IN_SELECTOR if self.action_type == 'CLOCK_IN' else CLOCK_OUT_SELECTOR
         selector_tuple = get_selector_tuple(selector_dict)
         
-        try:
-            logger.info(f"Looking for {self.action_type} button using {selector_tuple}")
-            
-            button = self.wait.until(
-                EC.element_to_be_clickable(selector_tuple),
-                message=f"Button with selector {selector_tuple} not found"
-            )
-            
-            if DRY_RUN:
-                logger.info(f"[DRY RUN] Would click {self.action_type} button")
-            else:
-                button.click()
-                time.sleep(2)  # Wait for action to process
-                
-                # Log button state change
-                self._log_button_state_change()
-                
-                logger.info(f"Successfully clicked {self.action_type} button")
-            
-            return True
-            
-        except Exception as e:
-            logger.info(f"Button not found with configured selector {selector_tuple}: {str(e)}")
-            # Try alternative selectors
-            return self._try_alternative_clock_button()
+        logger.info(f"Looking for {self.action_type} button using {selector_tuple}")
+        self.driver.switch_to.default_content()
+        button = self._find_element_in_frames(selector_tuple)
+
+        if button is None:
+            logger.info("Button not found with configured selector %s", selector_tuple)
+            self._save_debug_snapshot(f"{self.action_type} button was not found")
+            return False
+
+        logger.info("%s button HTML: %s", self.action_type, button.get_attribute("outerHTML"))
+        self._click_element(button, f"{self.action_type} button")
+        self._log_button_state_change()
+        logger.info(f"Successfully clicked {self.action_type} button")
+        return True
     
     def _log_button_state_change(self):
         """
