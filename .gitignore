@@ -1,6 +1,14 @@
 *.pyc
 *.log
 src/llm
+
+# Downloaded/local model weights (large binaries)
+*.gguf
+*.bin
+*.safetensors
+IA_copilot/python-model-local/models/
+IA_copilot/python-model-local/**/.cache/
+
 # --- APM runtime artifacts (auto-added by install-apm-bundle) ---
 __pycache__/
 *.pyc
