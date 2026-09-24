@@ -97,6 +97,7 @@ __pycache__/
 /hooks/engine/schemas/trace-record.schema.json
 /hooks/engine/schemas/workflow-state.schema.md
 /hooks/engine/scope_contract.py
+/hooks/engine/source_ingestion.py
 /hooks/engine/state_backup.py
 /hooks/engine/state_tracker/__init__.py
 /hooks/engine/state_tracker/_legacy.py
@@ -144,6 +145,7 @@ __pycache__/
 /hooks/engine/tests/test_scaffold_readme.py
 /hooks/engine/tests/test_scope_contract.py
 /hooks/engine/tests/test_sequence_enforcement.py
+/hooks/engine/tests/test_source_ingestion.py
 /hooks/engine/tests/test_state_backup.py
 /hooks/engine/tests/test_stop_hook_block_cap.py
 /hooks/engine/tests/test_stop_hook_checkpoint.py
@@ -573,6 +575,7 @@ __pycache__/
 /skills/nfr-review/SKILL.md
 /skills/observability-readiness/SKILL.md
 /skills/office-common/anonymize_document.py
+/skills/office-common/extract_sources.py
 /skills/office-common/helpers/__init__.py
 /skills/office-common/helpers/collapse_runs.py
 /skills/office-common/helpers/fold_redlines.py
@@ -580,6 +583,7 @@ __pycache__/
 /skills/office-common/ooxml_assemble.py
 /skills/office-common/ooxml_explode.py
 /skills/office-common/ooxml_verify.py
+/skills/office-common/requirements-extraction.txt
 /skills/office-common/schemas/ecma-373-V4/opc-contentTypes.xsd
 /skills/office-common/schemas/ecma-373-V4/opc-coreProperties.xsd
 /skills/office-common/schemas/ecma-373-V4/opc-digSig.xsd

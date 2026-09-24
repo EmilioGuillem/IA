@@ -43,7 +43,7 @@ MENU_LINK_SELECTOR = {
 }
 
 # Time windows and minimum working duration.
-CLOCK_IN_START_HOUR = 8
+CLOCK_IN_START_HOUR = 7
 CLOCK_IN_START_MINUTE = 0
 CLOCK_IN_END_HOUR = 9
 CLOCK_IN_END_MINUTE = 30
