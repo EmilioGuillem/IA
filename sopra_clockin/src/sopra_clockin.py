@@ -493,6 +493,24 @@ class SopraClockInAutomation:
         self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", element)
         self.driver.execute_script("arguments[0].click();", element)
         time.sleep(2)
+
+    def _find_clock_button(self, action_type):
+        """Find a clock button using configured and text-based selectors."""
+        selector_dict = CLOCK_IN_SELECTOR if action_type == 'CLOCK_IN' else CLOCK_OUT_SELECTOR
+        locators = [
+            get_selector_tuple(selector_dict),
+            (
+                By.XPATH,
+                "//button[contains(@class, 'register-button') and "
+                f"contains(translate(normalize-space(.), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', "
+                f"'abcdefghijklmnopqrstuvwxyz'), '{action_type.lower().replace('_', '-')}')]",
+            ),
+        ]
+        for locator in locators:
+            button = self._find_element_in_frames(locator)
+            if button is not None:
+                return button
+        return None
     
     def click_menu_link(self):
         """
@@ -509,8 +527,7 @@ class SopraClockInAutomation:
             if self._find_element_in_frames(menu_locator) is not None:
                 return True
 
-            selector_dict = CLOCK_IN_SELECTOR if self.action_type == 'CLOCK_IN' else CLOCK_OUT_SELECTOR
-            return self._find_element_in_frames(get_selector_tuple(selector_dict)) is not None
+            return self._find_clock_button(self.action_type) is not None
 
         try:
             self.wait.until(portal_control_available)
@@ -525,8 +542,7 @@ class SopraClockInAutomation:
             self._click_element(menu_link, f"menu link {MENU_LINK_TEXT}")
             return True
 
-        selector_dict = CLOCK_IN_SELECTOR if self.action_type == 'CLOCK_IN' else CLOCK_OUT_SELECTOR
-        clock_element = self._find_element_in_frames(get_selector_tuple(selector_dict))
+        clock_element = self._find_clock_button(self.action_type)
         if clock_element is not None:
             logger.info("Menu link not found, but target clock control is already available")
             return True
@@ -562,21 +578,18 @@ class SopraClockInAutomation:
             return True
         
         # Get the appropriate selector
-        selector_dict = CLOCK_IN_SELECTOR if self.action_type == 'CLOCK_IN' else CLOCK_OUT_SELECTOR
-        selector_tuple = get_selector_tuple(selector_dict)
-        
-        logger.info(f"Looking for {self.action_type} button using {selector_tuple}")
+        logger.info(f"Looking for {self.action_type} button")
         self.driver.switch_to.default_content()
-        button = self._find_element_in_frames(selector_tuple)
+        button = self._find_clock_button(self.action_type)
 
         if button is None:
-            logger.info("Button not found with configured selector %s", selector_tuple)
+            logger.info("Button not found for %s", self.action_type)
             self._save_debug_snapshot(f"{self.action_type} button was not found")
             return False
 
         if self.action_type == 'CLOCK_IN' and not button.is_enabled():
             self.driver.switch_to.default_content()
-            clock_out_button = self._find_element_in_frames(get_selector_tuple(CLOCK_OUT_SELECTOR))
+            clock_out_button = self._find_clock_button('CLOCK_OUT')
             if clock_out_button is not None and clock_out_button.is_enabled():
                 inferred_clock_in = datetime.now().replace(hour=8, minute=0, second=0, microsecond=0)
                 self.state['clock_in_at'] = inferred_clock_in.isoformat(timespec='seconds')

@@ -329,6 +329,17 @@ class TestButtonClicking(unittest.TestCase):
         self.assertTrue(result)
         self.automation.wait.until.assert_not_called()
 
+    def test_click_clock_button_returns_false_when_missing(self):
+        self.automation._find_element_in_frames = Mock(return_value=None)
+        self.automation._save_debug_snapshot = Mock()
+
+        result = self.automation.click_clock_button()
+
+        self.assertFalse(result)
+        self.automation._save_debug_snapshot.assert_called_once_with(
+            'CLOCK_IN button was not found'
+        )
+
     def test_menu_returns_false_when_menu_and_clock_control_missing(self):
         self.automation._find_element_in_frames = Mock(return_value=None)
         self.automation._save_debug_snapshot = Mock()
