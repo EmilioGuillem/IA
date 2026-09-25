@@ -36,7 +36,9 @@ from config.config import (
     SOPRA_URL, MENU_LINK_TEXT, CLOCK_IN_THRESHOLD, CLOCK_OUT_THRESHOLD,
     CLOCK_IN_START_HOUR, CLOCK_IN_START_MINUTE,
     CLOCK_IN_END_HOUR, CLOCK_IN_END_MINUTE,
-    CLOCK_OUT_START_HOUR, CLOCK_OUT_START_MINUTE, MIN_WORK_HOURS,
+    CLOCK_OUT_START_HOUR, CLOCK_OUT_START_MINUTE,
+    CLOCK_OUT_FRIDAY_START_HOUR, CLOCK_OUT_FRIDAY_START_MINUTE,
+    MIN_WORK_HOURS, MIN_WORK_HOURS_FRIDAY,
     STATE_FILE,
     CLOCK_IN_BUTTON_ID, CLOCK_OUT_BUTTON_ID, SOPRA_USERNAME, SOPRA_PASSWORD,
     WAIT_TIMEOUT, PAGE_LOAD_TIMEOUT, MAX_RETRIES, RETRY_DELAY, DRY_RUN,
@@ -101,6 +103,7 @@ class SopraClockInAutomation:
         now = datetime.now()
         self.current_hour = now.hour
         self.current_minute = now.minute
+        self.current_weekday = now.weekday()
         self.state = self._load_state(now)
         self.action_type = self._determine_action()
 
@@ -127,7 +130,9 @@ class SopraClockInAutomation:
         }
 
     def _save_state(self, timestamp, action):
-        """Persist an action only after its browser flow succeeds."""
+        """Persist a real CLOCK_IN/CLOCK_OUT action after its browser flow succeeds."""
+        if action not in ("CLOCK_IN", "CLOCK_OUT"):
+            return
         key = "clock_in_at" if action == "CLOCK_IN" else "clock_out_at"
         self.state[key] = timestamp.isoformat(timespec='seconds')
         with open(STATE_FILE, 'w', encoding='utf-8') as state_file:
@@ -152,7 +157,10 @@ class SopraClockInAutomation:
         """
         current_minutes = self.current_hour * 60 + self.current_minute
         clock_in_start = CLOCK_IN_START_HOUR * 60 + CLOCK_IN_START_MINUTE
-        clock_out_start = CLOCK_OUT_START_HOUR * 60 + CLOCK_OUT_START_MINUTE
+        if self.current_weekday == 4:
+            clock_out_start = CLOCK_OUT_FRIDAY_START_HOUR * 60 + CLOCK_OUT_FRIDAY_START_MINUTE
+        else:
+            clock_out_start = CLOCK_OUT_START_HOUR * 60 + CLOCK_OUT_START_MINUTE
 
         if self.state.get("clock_out_at"):
             return 'NONE'
@@ -170,7 +178,8 @@ class SopraClockInAutomation:
             return 'NONE'
 
         elapsed_hours = (datetime.now() - clock_in_at).total_seconds() / 3600
-        if current_minutes >= clock_out_start and elapsed_hours > MIN_WORK_HOURS:
+        minimum_work_hours = MIN_WORK_HOURS_FRIDAY if self.current_weekday == 4 else MIN_WORK_HOURS
+        if current_minutes >= clock_out_start and elapsed_hours >= minimum_work_hours:
             return 'CLOCK_OUT'
         return 'NONE'
     
@@ -493,6 +502,21 @@ class SopraClockInAutomation:
             bool: True if successful or not needed, False otherwise
         """
         logger.info(f"Looking for menu link: '{MENU_LINK_TEXT}'")
+
+        def portal_control_available(_driver):
+            self.driver.switch_to.default_content()
+            menu_locator = get_selector_tuple(MENU_LINK_SELECTOR)
+            if self._find_element_in_frames(menu_locator) is not None:
+                return True
+
+            selector_dict = CLOCK_IN_SELECTOR if self.action_type == 'CLOCK_IN' else CLOCK_OUT_SELECTOR
+            return self._find_element_in_frames(get_selector_tuple(selector_dict)) is not None
+
+        try:
+            self.wait.until(portal_control_available)
+        except Exception:
+            logger.warning("Portal loaded without the menu or clock control after %s seconds", WAIT_TIMEOUT)
+
         self.driver.switch_to.default_content()
         menu_link = self._find_element_in_frames(get_selector_tuple(MENU_LINK_SELECTOR))
 
@@ -549,6 +573,21 @@ class SopraClockInAutomation:
             logger.info("Button not found with configured selector %s", selector_tuple)
             self._save_debug_snapshot(f"{self.action_type} button was not found")
             return False
+
+        if self.action_type == 'CLOCK_IN' and not button.is_enabled():
+            self.driver.switch_to.default_content()
+            clock_out_button = self._find_element_in_frames(get_selector_tuple(CLOCK_OUT_SELECTOR))
+            if clock_out_button is not None and clock_out_button.is_enabled():
+                inferred_clock_in = datetime.now().replace(hour=8, minute=0, second=0, microsecond=0)
+                self.state['clock_in_at'] = inferred_clock_in.isoformat(timespec='seconds')
+                self.action_type = 'NONE'
+                if not DRY_RUN:
+                    self._save_state(inferred_clock_in, 'CLOCK_IN')
+                logger.warning(
+                    "Clock-in button is disabled and clock-out is enabled; assuming clock-in at %s",
+                    inferred_clock_in.strftime('%H:%M'),
+                )
+                return True
 
         logger.info("%s button HTML: %s", self.action_type, button.get_attribute("outerHTML"))
         self._click_element(button, f"{self.action_type} button")
@@ -607,18 +646,8 @@ class SopraClockInAutomation:
         Returns:
             bool: True if successful, False otherwise
         """
-        logger.info("="*80)
-        logger.info("Starting SopraGP4U Clock In/Out Automation")
-        logger.info(f"Current time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-        logger.info(f"Browser: {BROWSER.upper()}")
-        logger.info(f"Action type: {self.action_type}")
-        logger.info(f"Dry run mode: {DRY_RUN}")
-        logger.info("="*80)
-        
         for attempt in range(1, MAX_RETRIES + 1):
             try:
-                logger.info(f"\nAttempt {attempt}/{MAX_RETRIES}")
-                
                 # Setup driver
                 if not self.setup_driver():
                     raise Exception("Failed to setup WebDriver")
@@ -643,26 +672,18 @@ class SopraClockInAutomation:
                 if not self.click_clock_button():
                     raise Exception("Failed to click clock button")
 
-                if not DRY_RUN:
+                if not DRY_RUN and self.action_type in ("CLOCK_IN", "CLOCK_OUT"):
                     self._save_state(datetime.now(), self.action_type)
                     logger.info(f"Saved successful {self.action_type} state")
                 
-                logger.info("="*80)
-                logger.info("Automation completed successfully!")
-                logger.info("="*80)
+                logger.info("[OK] Automation completed successfully")
                 return True
                 
             except Exception as e:
-                logger.error(f"Attempt {attempt} failed: {str(e)}")
-                
                 if attempt < MAX_RETRIES:
-                    logger.info(f"Retrying in {RETRY_DELAY} seconds...")
                     time.sleep(RETRY_DELAY)
                 else:
-                    logger.error("All retry attempts failed!")
-                    logger.info("="*80)
-                    logger.info("Automation failed after all retries")
-                    logger.info("="*80)
+                    logger.error("[KO] Automation failed after all retries: %s", str(e))
                     return False
             
             finally:

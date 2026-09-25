@@ -98,14 +98,48 @@ class TestActionDetermination(unittest.TestCase):
     def test_clock_out_after_threshold(self):
         """Test clock-out after the minimum nine-hour duration."""
         automation = SopraClockInAutomation()
+        automation.current_weekday = 0
         automation.current_hour = 18
         automation.current_minute = 0
         automation.state['clock_in_at'] = (datetime.now() - timedelta(hours=10)).isoformat()
         self.assertEqual(automation._determine_action(), 'CLOCK_OUT')
+
+    def test_friday_clock_out_starts_at_15(self):
+        automation = SopraClockInAutomation()
+        automation.current_weekday = 4
+        automation.current_hour = 15
+        automation.current_minute = 0
+        automation.state['clock_in_at'] = (datetime.now() - timedelta(hours=9)).isoformat()
+        self.assertEqual(automation._determine_action(), 'CLOCK_OUT')
+
+    def test_friday_clock_out_after_seven_hours(self):
+        automation = SopraClockInAutomation()
+        automation.current_weekday = 4
+        automation.current_hour = 15
+        automation.current_minute = 0
+        automation.state['clock_in_at'] = (datetime.now() - timedelta(hours=7)).isoformat()
+        self.assertEqual(automation._determine_action(), 'CLOCK_OUT')
+
+    def test_friday_clock_out_waits_for_seven_hours(self):
+        automation = SopraClockInAutomation()
+        automation.current_weekday = 4
+        automation.current_hour = 15
+        automation.current_minute = 0
+        automation.state['clock_in_at'] = (datetime.now() - timedelta(hours=6)).isoformat()
+        self.assertEqual(automation._determine_action(), 'NONE')
+
+    def test_friday_clock_out_waits_until_15(self):
+        automation = SopraClockInAutomation()
+        automation.current_weekday = 4
+        automation.current_hour = 14
+        automation.current_minute = 59
+        automation.state['clock_in_at'] = (datetime.now() - timedelta(hours=9)).isoformat()
+        self.assertEqual(automation._determine_action(), 'NONE')
     
     def test_no_action_during_work_hours(self):
         """Test that checkout waits until nine hours have elapsed."""
         automation = SopraClockInAutomation()
+        automation.current_weekday = 0
         automation.current_hour = 17
         automation.current_minute = 30
         automation.state['clock_in_at'] = (datetime.now() - timedelta(hours=8)).isoformat()
@@ -114,9 +148,17 @@ class TestActionDetermination(unittest.TestCase):
     def test_late_login_uses_nearest_available_check(self):
         """Test fallback clock-in after the preferred window is missed."""
         automation = SopraClockInAutomation()
+        automation.current_weekday = 0
         automation.current_hour = 16
         automation.current_minute = 30
         self.assertEqual(automation._determine_action(), 'CLOCK_IN')
+
+    def test_none_action_does_not_save_state(self):
+        """A NONE run must never write clock_out_at (regression for false clock-out block)."""
+        automation = SopraClockInAutomation()
+        automation.state['clock_in_at'] = (datetime.now() - timedelta(hours=1)).isoformat()
+        automation._save_state(datetime.now(), 'NONE')
+        self.assertIsNone(automation.state['clock_out_at'])
 
     def test_missing_state_after_clock_out_start_uses_clock_out(self):
         """Test that a late run after checkout time clicks clock-out, not clock-in."""
@@ -178,12 +220,13 @@ class TestNavigation(unittest.TestCase):
     def test_navigate_to_portal_success(self, mock_sleep):
         """Test successful portal navigation."""
         self.automation.driver.get = Mock()
+        self.automation.driver.current_url = "https://example.test/SopraGP4U/WAW05B02"
         
         result = self.automation.navigate_to_portal()
         
         self.assertTrue(result)
         self.automation.driver.get.assert_called_once()
-        mock_sleep.assert_called_once_with(2)
+        mock_sleep.assert_called_once_with(3)
     
     @patch('sopra_clockin.time.sleep')
     def test_navigate_to_portal_failure(self, mock_sleep):
@@ -244,6 +287,24 @@ class TestButtonClicking(unittest.TestCase):
             
             self.assertTrue(result)
             self.automation._click_element.assert_called_once_with(mock_button, 'CLOCK_IN button')
+
+    def test_disabled_clock_in_infers_eight_am_when_clock_out_is_enabled(self):
+        clock_in_button = Mock()
+        clock_in_button.is_enabled.return_value = False
+        clock_out_button = Mock()
+        clock_out_button.is_enabled.return_value = True
+        self.automation._find_element_in_frames = Mock(side_effect=[clock_in_button, clock_out_button])
+        self.automation._click_element = Mock()
+        self.automation._save_state = Mock()
+
+        with patch('sopra_clockin.DRY_RUN', False):
+            result = self.automation.click_clock_button()
+
+        self.assertTrue(result)
+        self.assertEqual(self.automation.action_type, 'NONE')
+        self.assertTrue(self.automation.state['clock_in_at'].endswith('T08:00:00'))
+        self.automation._click_element.assert_not_called()
+        self.automation._save_state.assert_called_once()
     
     @patch('sopra_clockin.time.sleep')
     def test_click_clock_button_dry_run(self, mock_sleep):

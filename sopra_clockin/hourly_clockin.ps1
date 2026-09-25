@@ -17,26 +17,30 @@ try {
     $Python = (Get-Command python.exe -ErrorAction Stop).Source
 }
 catch {
-    Write-RunnerLog "FATAL: python.exe not found in PATH. Install Python or fix PATH, then re-run."
-    Read-Host "Press Enter to close"
+    Write-RunnerLog "[KO] python.exe not found in PATH"
     exit 1
 }
 
 Set-Location $ProjectDir
 $env:SOPRA_BROWSER = "edge"
 $env:SOPRA_DRY_RUN = "false"
-Write-RunnerLog "Hourly runner started for user $env:USERNAME (python: $Python)"
+$env:SOPRA_QUIET_LOGS = "true"
 
 while ($true) {
     try {
-        Write-RunnerLog "Starting hourly check"
-        & $Python (Join-Path $ProjectDir "src\sopra_clockin.py") *>> $LogFile
-        Write-RunnerLog "Hourly check finished with exit code $LASTEXITCODE"
+        Write-RunnerLog "[CHECK] Starting hourly verification"
+        & $Python (Join-Path $ProjectDir "src\sopra_clockin.py")
+        $exitCode = $LASTEXITCODE
+        if ($exitCode -eq 0) {
+            Write-RunnerLog "[OK] Hourly verification completed"
+        }
+        else {
+            Write-RunnerLog "[KO] Hourly verification failed (exit code $exitCode)"
+        }
     }
     catch {
-        Write-RunnerLog "Hourly check failed: $($_.Exception.Message)"
+        Write-RunnerLog "[KO] Hourly verification failed: $($_.Exception.Message)"
     }
 
-    Write-RunnerLog "Sleeping for 1 hour until next check"
     Start-Sleep -Seconds 3600
 }

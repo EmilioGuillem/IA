@@ -33,6 +33,11 @@ __pycache__/
 /agents/repository-analyzer.agent.md
 /agents/reverse-backlog.agent.md
 /agents/reverse-user-story.agent.md
+/agents/salesforce-architecture-advisor.agent.md
+/agents/salesforce-backlog-solutioning.agent.md
+/agents/salesforce-org-audit.agent.md
+/agents/salesforce-user-story-solutioning.agent.md
+/agents/salesforce-xml-generator.agent.md
 /agents/sdlc-ba-analyst.agent.md
 /agents/sdlc-ba-reviewer.agent.md
 /agents/sdlc-steer-manager.agent.md
@@ -42,6 +47,7 @@ __pycache__/
 /agents/sdlc-test-executor.agent.md
 /agents/security-reviewer.agent.md
 /agents/spec-orchestrator.agent.md
+/agents/spec-writer-comparator.agent.md
 /agents/station-orchestrator.agent.md
 /agents/workflow-orchestrator.agent.md
 /contexts/hub-catalog.yaml
@@ -729,6 +735,8 @@ __pycache__/
 /skills/requirements-validation/SKILL.md
 /skills/risk-scoring/SKILL.md
 /skills/root-cause-analysis/SKILL.md
+/skills/salesforce-field-object-metadata/SKILL.md
+/skills/salesforce-metadata-analysis/SKILL.md
 /skills/sandbox-execution/SKILL.md
 /skills/sdlc-atlassian-setup/docs/sk-atlassian.md
 /skills/sdlc-atlassian-setup/docs/sk-confluence-setup.md
