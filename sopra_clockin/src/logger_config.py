@@ -19,6 +19,8 @@ class QuietAutomationFilter(logging.Filter):
     def filter(self, record):
         if os.getenv("SOPRA_QUIET_LOGS", "false").lower() != "true":
             return True
+        if record.levelno >= logging.WARNING:
+            return True
         return record.getMessage().startswith(("[CHECK]", "[OK]", "[KO]"))
 
 def setup_logger(name):
@@ -46,12 +48,13 @@ def setup_logger(name):
         datefmt=LOG_DATE_FORMAT
     )
     
-    # File handler - rotates every day or when it reaches 10MB
-    file_handler = logging.handlers.RotatingFileHandler(
+    # Rotate at midnight and retain only the previous day's log.
+    file_handler = logging.handlers.TimedRotatingFileHandler(
         LOG_FILE,
-        maxBytes=10*1024*1024,  # 10MB
-        backupCount=10,  # Keep 10 backup files
-        encoding='utf-8'  # Explicit UTF-8 encoding
+        when="midnight",
+        interval=1,
+        backupCount=1,
+        encoding='utf-8'
     )
     file_handler.setLevel(getattr(logging, LOG_LEVEL))
     file_handler.setFormatter(formatter)

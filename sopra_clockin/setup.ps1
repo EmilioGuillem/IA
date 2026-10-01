@@ -72,7 +72,7 @@ if ($SetCredentials -or $All) {
 # Create scheduled tasks
 if ($CreateScheduledTasks -or $All) {
     Write-Host ""
-    Write-Host "Creating hourly logon task..." -ForegroundColor Cyan
+    Write-Host "Creating logon task with 07:30 fallback..." -ForegroundColor Cyan
 
     $taskName = "SopraGP4U Hourly Check"
     $runner = Join-Path $ProjectDir "hourly_clockin.ps1"
@@ -80,7 +80,10 @@ if ($CreateScheduledTasks -or $All) {
     $action = New-ScheduledTaskAction `
         -Execute $powershell `
         -Argument "-NoProfile -ExecutionPolicy Bypass -File `"$runner`""
-    $trigger = New-ScheduledTaskTrigger -AtLogOn -User $env:USERNAME
+    $triggers = @(
+        (New-ScheduledTaskTrigger -AtLogOn -User $env:USERNAME),
+        (New-ScheduledTaskTrigger -Daily -At "07:30")
+    )
     $settings = New-ScheduledTaskSettingsSet `
         -MultipleInstances IgnoreNew `
         -StartWhenAvailable
@@ -88,14 +91,14 @@ if ($CreateScheduledTasks -or $All) {
     try {
         Register-ScheduledTask -TaskName $taskName `
             -Action $action `
-            -Trigger $trigger `
+            -Trigger $triggers `
             -Settings $settings `
-            -Description "Comprueba SopraGP4U al iniciar sesión y cada hora." `
+            -Description "Inicia al iniciar sesión o como respaldo diario a las 07:30; el runner comprueba cada 30 minutos." `
             -Force | Out-Null
 
         Unregister-ScheduledTask -TaskName "SopraGP4U Clock In" -Confirm:$false -ErrorAction SilentlyContinue
         Unregister-ScheduledTask -TaskName "SopraGP4U Clock Out" -Confirm:$false -ErrorAction SilentlyContinue
-        Write-Host "[OK] Hourly logon task created: $taskName" -ForegroundColor Green
+        Write-Host "[OK] Logon and 07:30 fallback triggers created: $taskName" -ForegroundColor Green
     }
     catch {
         Write-Host "[ERROR] Hourly task creation failed: $_" -ForegroundColor Red

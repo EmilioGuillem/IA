@@ -91,56 +91,17 @@ python src/sopra_clockin.py
 
 ### Ejecución mediante Task Scheduler
 
-#### Opción 1: Programar mediante GUI (Recomendado)
-
-1. **Abre Task Scheduler** (Windows + R → `taskschd.msc`)
-
-2. **Crea una nueva tarea**: 
-   - Click derecho en "Tareas programadas" → "Crear tarea..."
-
-3. **Pestaña "General"**:
-   - Nombre: `SopraGP4U Clock In`
-   - Descripción: `Automatic clock in/out for SopraGP4U`
-   - ☑ Ejecutar independientemente de que el usuario haya iniciado sesión o no
-   - ☑ Ejecutar con privilegios máximos
-
-4. **Pestaña "Desencadenadores"** - Crea dos tareas:
-
-   **Tarea 1 - CLOCK IN**:
-   - Tipo: Diariamente
-   - Hora: 08:00 (8:00 AM - antes de las 10:00 AM)
-   - Repetir cada día
-
-   **Tarea 2 - CLOCK OUT**:
-   - Tipo: Diariamente
-   - Hora: 17:15 (5:15 PM - después de las 5:00 PM)
-   - Repetir cada día
-
-5. **Pestaña "Acciones"**:
-   - Acción: Iniciar un programa
-   - Programa: `C:\Users\eguillemsimon\Documents\IA\IA\sopra_clockin\scheduled_clockin.bat`
-   - Directorio de inicio: `C:\Users\eguillemsimon\Documents\IA\IA\sopra_clockin`
-
-6. **Pestaña "Condiciones"**:
-   - ☐ Iniciar la tarea solo si se está ejecutando en CA
-   - ☐ Detener si la tarea se ejecuta más de: (sin límite)
-
-7. **Pestaña "Configuración"**:
-   - Permitir que la tarea se ejecute a petición
-   - Si la tarea no se ejecuta en la hora programada, reintentar cada: 5 minutos (máx. 3 intentos)
-
-#### Opción 2: Programar mediante PowerShell (Avanzado)
+No crees tareas separadas para entrada y salida ni configures repetición
+periódica en Task Scheduler. Usa el setup canónico:
 
 ```powershell
-# Crear tarea de CLOCK IN
-$action = New-ScheduledTaskAction -Execute "C:\Users\eguillemsimon\Documents\IA\IA\sopra_clockin\scheduled_clockin.bat"
-$trigger = New-ScheduledTaskTrigger -Daily -At 08:00
-Register-ScheduledTask -TaskName "SopraGP4U Clock In" -Action $action -Trigger $trigger -RunLevel Highest
-
-# Crear tarea de CLOCK OUT
-$trigger = New-ScheduledTaskTrigger -Daily -At 17:15
-Register-ScheduledTask -TaskName "SopraGP4U Clock Out" -Action $action -Trigger $trigger -RunLevel Highest
+cd "C:\Users\eguillemsimon\Documents\IA\IA\sopra_clockin"
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\setup.ps1 -CreateScheduledTasks
 ```
+
+Esto crea `SopraGP4U Hourly Check` con `AtLogOn` y un respaldo diario a las
+07:30. El runner comprueba cada 30 minutos y abre Edge headless cuando necesita
+verificar el portal; no depende de iniciar Edge manualmente.
 
 ## Configuración
 

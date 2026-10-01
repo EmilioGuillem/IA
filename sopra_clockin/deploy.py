@@ -194,10 +194,7 @@ def test_setup():
 
 
 def setup_scheduled_tasks():
-    """Setup Windows Task Scheduler tasks."""
-
-
-
+    """Create the canonical logon and 07:30 fallback task."""
     print("\n" + "="*60)
     print("SETTING UP TASK SCHEDULER")
     print("="*60)
@@ -212,33 +209,14 @@ def setup_scheduled_tasks():
         return True
     
     project_dir = Path(__file__).parent.absolute()
-    bat_file = project_dir / "scheduled_clockin.bat"
-    
-    # Create CLOCK-IN task
-    powershell_cmd = f"""
-    $action = New-ScheduledTaskAction -Execute '{bat_file}'
-    $trigger = New-ScheduledTaskTrigger -Daily -At 08:00
-    Register-ScheduledTask -TaskName 'SopraGP4U Clock In' -Action $action -Trigger $trigger -RunLevel Highest -Force
-    """
-    
+    setup_script = project_dir / "setup.ps1"
     success, _ = run_command(
-        ["powershell", "-Command", powershell_cmd],
-        "Creating CLOCK-IN task"
+        [
+            "powershell", "-NoProfile", "-ExecutionPolicy", "Bypass",
+            "-File", str(setup_script), "-CreateScheduledTasks",
+        ],
+        "Creating logon and 07:30 fallback task"
     )
-    
-    if success:
-        # Create CLOCK-OUT task  
-        powershell_cmd = f"""
-        $action = New-ScheduledTaskAction -Execute '{bat_file}'
-        $trigger = New-ScheduledTaskTrigger -Daily -At 17:15
-        Register-ScheduledTask -TaskName 'SopraGP4U Clock Out' -Action $action -Trigger $trigger -RunLevel Highest -Force
-        """
-        
-        success, _ = run_command(
-            ["powershell", "-Command", powershell_cmd],
-            "Creating CLOCK-OUT task"
-        )
-    
     return success
 
 

@@ -1,0 +1,242 @@
+2026-09-25 12:48:05 - __main__ - INFO - [OK] Automation completed successfully
+2026-09-25 13:48:23 - __main__ - INFO - [OK] Automation completed successfully
+2026-09-25 14:48:43 - __main__ - INFO - [OK] Automation completed successfully
+2026-09-25 15:49:11 - __main__ - INFO - [OK] Automation completed successfully
+2026-09-28 09:03:22 - __main__ - INFO - [OK] Automation completed successfully
+2026-09-28 10:03:40 - __main__ - INFO - [OK] Automation completed successfully
+2026-09-28 11:03:57 - __main__ - INFO - [OK] Automation completed successfully
+2026-09-28 12:04:14 - __main__ - INFO - [OK] Automation completed successfully
+2026-09-28 13:04:30 - __main__ - INFO - [OK] Automation completed successfully
+2026-09-28 14:04:47 - __main__ - INFO - [OK] Automation completed successfully
+2026-09-28 15:05:03 - __main__ - INFO - [OK] Automation completed successfully
+2026-09-28 16:05:20 - __main__ - INFO - [OK] Automation completed successfully
+2026-09-28 17:05:37 - __main__ - INFO - [OK] Automation completed successfully
+2026-09-28 18:05:57 - __main__ - INFO - [OK] Automation completed successfully
+2026-09-28 19:08:27 - __main__ - ERROR - [KO] Automation failed after all retries: Failed to click menu link
+2026-09-28 20:10:53 - __main__ - ERROR - [KO] Automation failed after all retries: Failed to click menu link
+2026-09-29 08:21:13 - __main__ - INFO - [OK] Automation completed successfully
+2026-09-29 11:03:05 - __main__ - INFO - [OK] Automation completed successfully
+2026-09-29 12:03:29 - __main__ - INFO - [OK] Automation completed successfully
+2026-09-29 13:03:47 - __main__ - INFO - [OK] Automation completed successfully
+2026-09-29 16:00:46 - __main__ - INFO - [OK] Automation completed successfully
+2026-09-29 17:01:06 - __main__ - INFO - [OK] Automation completed successfully
+2026-09-29 17:24:45 - __main__ - INFO - [OK] Automation completed successfully
+2026-09-29 17:33:03 - __main__ - INFO - [OK] Automation completed successfully
+2026-09-29 18:03:13 - __main__ - ERROR - [KO] Automation failed after all retries: Failed to click menu link
+2026-09-30 05:39:20 - __main__ - ERROR - [KO] Automation failed after all retries: Failed to click menu link
+2026-09-30 05:56:24 - sopra_clockin - WARNING - Clock-in window missed; using the nearest available check
+2026-09-30 05:56:24 - sopra_clockin - WARNING - No local clock-in state found; current time is past clock-out start, using CLOCK_OUT
+2026-09-30 05:56:24 - sopra_clockin - INFO - Setting up Chrome WebDriver...
+2026-09-30 05:56:24 - sopra_clockin - INFO - Running in headless mode
+2026-09-30 05:56:24 - sopra_clockin - INFO - Chrome WebDriver initialized successfully
+2026-09-30 05:56:24 - sopra_clockin - INFO - Setting up Edge WebDriver...
+2026-09-30 05:56:24 - sopra_clockin - INFO - Running in headless mode
+2026-09-30 05:56:24 - sopra_clockin - INFO - Edge WebDriver initialized successfully
+2026-09-30 05:56:24 - sopra_clockin - INFO - Navigating to https://sprportal-mcp.soprahronline.com/SopraGP4U/WAW05B02
+2026-09-30 05:56:24 - sopra_clockin - ERROR - Failed to navigate to portal: Network error
+Traceback (most recent call last):
+  File "C:\Users\eguillemsimon\Documents\IA\IA\sopra_clockin\src\sopra_clockin.py", line 281, in navigate_to_portal
+    self.driver.get(SOPRA_URL)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "C:\Python314\Lib\unittest\mock.py", line 1176, in __call__
+    return self._mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\unittest\mock.py", line 1180, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\unittest\mock.py", line 1241, in _execute_mock_call
+    raise effect
+Exception: Network error
+2026-09-30 05:56:24 - sopra_clockin - INFO - Navigating to https://sprportal-mcp.soprahronline.com/SopraGP4U/WAW05B02
+2026-09-30 05:56:24 - sopra_clockin - INFO - Successfully navigated to portal
+2026-09-30 05:56:24 - sopra_clockin - INFO - No login form detected
+2026-09-30 05:56:25 - sopra_clockin - INFO - Login form detected using ('id', 'username')
+2026-09-30 05:56:25 - sopra_clockin - INFO - Trying alternative selectors for clock button...
+2026-09-30 05:56:27 - sopra_clockin - INFO - Clock-in button clicked - expecting clock-out button to be enabled now
+2026-09-30 05:56:27 - sopra_clockin - INFO - Successfully clicked alternative clock button
+2026-09-30 05:56:27 - sopra_clockin - INFO - Looking for CLOCK_IN button
+2026-09-30 05:56:27 - sopra_clockin - INFO - CLOCK_IN button HTML: <Mock name='mock.get_attribute()' id='1971615386320'>
+2026-09-30 05:56:27 - sopra_clockin - INFO - Clock-in button clicked - expecting clock-out button to be enabled now
+2026-09-30 05:56:27 - sopra_clockin - INFO - Successfully clicked CLOCK_IN button
+2026-09-30 05:56:27 - sopra_clockin - INFO - Current time is 5:00 - outside clock-in/out windows
+2026-09-30 05:56:27 - sopra_clockin - INFO - Looking for CLOCK_IN button
+2026-09-30 05:56:27 - sopra_clockin - INFO - Button not found for CLOCK_IN
+2026-09-30 05:56:27 - sopra_clockin - ERROR - CLOCK_IN button was not found; could not read browser context: object of type 'Mock' has no len()
+Traceback (most recent call last):
+  File "C:\Users\eguillemsimon\Documents\IA\IA\sopra_clockin\src\sopra_clockin.py", line 444, in _log_browser_context
+    frame_count = len(self.driver.find_elements(By.CSS_SELECTOR, "iframe, frame"))
+TypeError: object of type 'Mock' has no len()
+2026-09-30 05:56:27 - sopra_clockin - INFO - Looking for CLOCK_IN button
+2026-09-30 05:56:27 - sopra_clockin - INFO - CLOCK_IN button HTML: <Mock name='mock.get_attribute()' id='1971615391024'>
+2026-09-30 05:56:27 - sopra_clockin - INFO - Clock-in button clicked - expecting clock-out button to be enabled now
+2026-09-30 05:56:27 - sopra_clockin - INFO - Successfully clicked CLOCK_IN button
+2026-09-30 05:56:27 - sopra_clockin - INFO - Looking for CLOCK_IN button
+2026-09-30 05:56:27 - sopra_clockin - WARNING - Clock-in button is disabled and clock-out is enabled; assuming clock-in at 08:00
+2026-09-30 05:56:27 - sopra_clockin - INFO - Looking for menu link: 'Registro de entrada / salida'
+2026-09-30 05:56:27 - sopra_clockin - INFO - Menu link HTML: <Mock name='mock.get_attribute()' id='1971616222912'>
+2026-09-30 05:56:27 - sopra_clockin - INFO - Looking for menu link: 'Registro de entrada / salida'
+2026-09-30 05:56:27 - sopra_clockin - ERROR - Neither menu link nor target clock control was found; could not read browser context: object of type 'Mock' has no len()
+Traceback (most recent call last):
+  File "C:\Users\eguillemsimon\Documents\IA\IA\sopra_clockin\src\sopra_clockin.py", line 444, in _log_browser_context
+    frame_count = len(self.driver.find_elements(By.CSS_SELECTOR, "iframe, frame"))
+TypeError: object of type 'Mock' has no len()
+2026-09-30 05:56:53 - sopra_clockin - WARNING - Clock-in window missed; using the nearest available check
+2026-09-30 05:56:53 - sopra_clockin - WARNING - No local clock-in state found; current time is past clock-out start, using CLOCK_OUT
+2026-09-30 05:56:53 - sopra_clockin - INFO - Setting up Chrome WebDriver...
+2026-09-30 05:56:53 - sopra_clockin - INFO - Running in headless mode
+2026-09-30 05:56:53 - sopra_clockin - INFO - Chrome WebDriver initialized successfully
+2026-09-30 05:56:53 - sopra_clockin - INFO - Setting up Edge WebDriver...
+2026-09-30 05:56:53 - sopra_clockin - INFO - Running in headless mode
+2026-09-30 05:56:53 - sopra_clockin - INFO - Edge WebDriver initialized successfully
+2026-09-30 05:56:53 - sopra_clockin - INFO - Navigating to https://sprportal-mcp.soprahronline.com/SopraGP4U/WAW05B02
+2026-09-30 05:56:53 - sopra_clockin - ERROR - Failed to navigate to portal: Network error
+Traceback (most recent call last):
+  File "C:\Users\eguillemsimon\Documents\IA\IA\sopra_clockin\src\sopra_clockin.py", line 281, in navigate_to_portal
+    self.driver.get(SOPRA_URL)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "C:\Python314\Lib\unittest\mock.py", line 1176, in __call__
+    return self._mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\unittest\mock.py", line 1180, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\unittest\mock.py", line 1241, in _execute_mock_call
+    raise effect
+Exception: Network error
+2026-09-30 05:56:53 - sopra_clockin - INFO - Navigating to https://sprportal-mcp.soprahronline.com/SopraGP4U/WAW05B02
+2026-09-30 05:56:53 - sopra_clockin - INFO - Successfully navigated to portal
+2026-09-30 05:56:53 - sopra_clockin - INFO - No login form detected
+2026-09-30 05:56:53 - sopra_clockin - INFO - Login form detected using ('id', 'username')
+2026-09-30 05:56:53 - sopra_clockin - INFO - Trying alternative selectors for clock button...
+2026-09-30 05:56:55 - sopra_clockin - INFO - Clock-in button clicked - expecting clock-out button to be enabled now
+2026-09-30 05:56:55 - sopra_clockin - INFO - Successfully clicked alternative clock button
+2026-09-30 05:56:55 - sopra_clockin - INFO - Looking for CLOCK_IN button
+2026-09-30 05:56:55 - sopra_clockin - INFO - CLOCK_IN button HTML: <Mock name='mock.get_attribute()' id='2282517803904'>
+2026-09-30 05:56:55 - sopra_clockin - INFO - Clock-in button clicked - expecting clock-out button to be enabled now
+2026-09-30 05:56:55 - sopra_clockin - INFO - Successfully clicked CLOCK_IN button
+2026-09-30 05:56:55 - sopra_clockin - INFO - Current time is 5:00 - outside clock-in/out windows
+2026-09-30 05:56:55 - sopra_clockin - INFO - Looking for CLOCK_IN button
+2026-09-30 05:56:55 - sopra_clockin - INFO - Button not found for CLOCK_IN
+2026-09-30 05:56:55 - sopra_clockin - INFO - Looking for CLOCK_IN button
+2026-09-30 05:56:55 - sopra_clockin - INFO - CLOCK_IN button HTML: <Mock name='mock.get_attribute()' id='2282518613696'>
+2026-09-30 05:56:55 - sopra_clockin - INFO - Clock-in button clicked - expecting clock-out button to be enabled now
+2026-09-30 05:56:55 - sopra_clockin - INFO - Successfully clicked CLOCK_IN button
+2026-09-30 05:56:55 - sopra_clockin - INFO - Looking for CLOCK_IN button
+2026-09-30 05:56:55 - sopra_clockin - WARNING - Clock-in button is disabled and clock-out is enabled; assuming clock-in at 08:00
+2026-09-30 05:56:55 - sopra_clockin - INFO - Looking for menu link: 'Registro de entrada / salida'
+2026-09-30 05:56:55 - sopra_clockin - INFO - Menu link HTML: <Mock name='mock.get_attribute()' id='2282518620752'>
+2026-09-30 05:56:55 - sopra_clockin - INFO - Looking for menu link: 'Registro de entrada / salida'
+2026-09-30 05:57:09 - sopra_clockin - WARNING - Clock-in window missed; using the nearest available check
+2026-09-30 05:57:09 - sopra_clockin - WARNING - No local clock-in state found; current time is past clock-out start, using CLOCK_OUT
+2026-09-30 05:57:09 - sopra_clockin - INFO - Setting up Chrome WebDriver...
+2026-09-30 05:57:09 - sopra_clockin - INFO - Running in headless mode
+2026-09-30 05:57:09 - sopra_clockin - INFO - Chrome WebDriver initialized successfully
+2026-09-30 05:57:09 - sopra_clockin - INFO - Setting up Edge WebDriver...
+2026-09-30 05:57:09 - sopra_clockin - INFO - Running in headless mode
+2026-09-30 05:57:09 - sopra_clockin - INFO - Edge WebDriver initialized successfully
+2026-09-30 05:57:09 - sopra_clockin - INFO - Navigating to https://sprportal-mcp.soprahronline.com/SopraGP4U/WAW05B02
+2026-09-30 05:57:09 - sopra_clockin - ERROR - Failed to navigate to portal: Network error
+Traceback (most recent call last):
+  File "C:\Users\eguillemsimon\Documents\IA\IA\sopra_clockin\src\sopra_clockin.py", line 281, in navigate_to_portal
+    self.driver.get(SOPRA_URL)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "C:\Python314\Lib\unittest\mock.py", line 1176, in __call__
+    return self._mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\unittest\mock.py", line 1180, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\unittest\mock.py", line 1241, in _execute_mock_call
+    raise effect
+Exception: Network error
+2026-09-30 05:57:09 - sopra_clockin - INFO - Navigating to https://sprportal-mcp.soprahronline.com/SopraGP4U/WAW05B02
+2026-09-30 05:57:09 - sopra_clockin - INFO - Successfully navigated to portal
+2026-09-30 05:57:09 - sopra_clockin - INFO - No login form detected
+2026-09-30 05:57:09 - sopra_clockin - INFO - Login form detected using ('id', 'username')
+2026-09-30 05:57:09 - sopra_clockin - INFO - Trying alternative selectors for clock button...
+2026-09-30 05:57:11 - sopra_clockin - INFO - Clock-in button clicked - expecting clock-out button to be enabled now
+2026-09-30 05:57:11 - sopra_clockin - INFO - Successfully clicked alternative clock button
+2026-09-30 05:57:11 - sopra_clockin - INFO - Looking for CLOCK_IN button
+2026-09-30 05:57:11 - sopra_clockin - INFO - CLOCK_IN button HTML: <Mock name='mock.get_attribute()' id='1658782462512'>
+2026-09-30 05:57:11 - sopra_clockin - INFO - Clock-in button clicked - expecting clock-out button to be enabled now
+2026-09-30 05:57:11 - sopra_clockin - INFO - Successfully clicked CLOCK_IN button
+2026-09-30 05:57:11 - sopra_clockin - INFO - Current time is 5:00 - outside clock-in/out windows
+2026-09-30 05:57:11 - sopra_clockin - INFO - Looking for CLOCK_IN button
+2026-09-30 05:57:11 - sopra_clockin - INFO - Button not found for CLOCK_IN
+2026-09-30 05:57:11 - sopra_clockin - INFO - Looking for CLOCK_IN button
+2026-09-30 05:57:11 - sopra_clockin - INFO - CLOCK_IN button HTML: <Mock name='mock.get_attribute()' id='1658783272304'>
+2026-09-30 05:57:11 - sopra_clockin - INFO - Clock-in button clicked - expecting clock-out button to be enabled now
+2026-09-30 05:57:11 - sopra_clockin - INFO - Successfully clicked CLOCK_IN button
+2026-09-30 05:57:11 - sopra_clockin - INFO - Looking for CLOCK_IN button
+2026-09-30 05:57:11 - sopra_clockin - WARNING - Clock-in button is disabled and clock-out is enabled; assuming clock-in at 08:00
+2026-09-30 05:57:11 - sopra_clockin - INFO - Looking for menu link: 'Registro de entrada / salida'
+2026-09-30 05:57:11 - sopra_clockin - INFO - Menu link HTML: <Mock name='mock.get_attribute()' id='1658783279360'>
+2026-09-30 05:57:11 - sopra_clockin - INFO - Looking for menu link: 'Registro de entrada / salida'
+2026-09-30 05:59:04 - sopra_clockin - WARNING - Clock-in window missed; using the nearest available check
+2026-09-30 05:59:04 - sopra_clockin - WARNING - No local clock-in state found; current time is past clock-out start, using CLOCK_OUT
+2026-09-30 05:59:04 - sopra_clockin - INFO - Setting up Chrome WebDriver...
+2026-09-30 05:59:04 - sopra_clockin - INFO - Running in headless mode
+2026-09-30 05:59:04 - sopra_clockin - INFO - Chrome WebDriver initialized successfully
+2026-09-30 05:59:04 - sopra_clockin - INFO - Setting up Edge WebDriver...
+2026-09-30 05:59:04 - sopra_clockin - INFO - Running in headless mode
+2026-09-30 05:59:04 - sopra_clockin - INFO - Edge WebDriver initialized successfully
+2026-09-30 05:59:04 - sopra_clockin - INFO - Navigating to https://sprportal-mcp.soprahronline.com/SopraGP4U/WAW05B02
+2026-09-30 05:59:04 - sopra_clockin - ERROR - Failed to navigate to portal: Network error
+Traceback (most recent call last):
+  File "C:\Users\eguillemsimon\Documents\IA\IA\sopra_clockin\src\sopra_clockin.py", line 281, in navigate_to_portal
+    self.driver.get(SOPRA_URL)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "C:\Python314\Lib\unittest\mock.py", line 1176, in __call__
+    return self._mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\unittest\mock.py", line 1180, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\unittest\mock.py", line 1241, in _execute_mock_call
+    raise effect
+Exception: Network error
+2026-09-30 05:59:04 - sopra_clockin - INFO - Navigating to https://sprportal-mcp.soprahronline.com/SopraGP4U/WAW05B02
+2026-09-30 05:59:04 - sopra_clockin - INFO - Successfully navigated to portal
+2026-09-30 05:59:04 - sopra_clockin - INFO - No login form detected
+2026-09-30 05:59:04 - sopra_clockin - INFO - Login form detected using ('id', 'username')
+2026-09-30 05:59:04 - sopra_clockin - INFO - Trying alternative selectors for clock button...
+2026-09-30 05:59:06 - sopra_clockin - INFO - Clock-in button clicked - expecting clock-out button to be enabled now
+2026-09-30 05:59:06 - sopra_clockin - INFO - Successfully clicked alternative clock button
+2026-09-30 05:59:06 - sopra_clockin - INFO - Looking for CLOCK_IN button
+2026-09-30 05:59:06 - sopra_clockin - INFO - CLOCK_IN button HTML: <Mock name='mock.get_attribute()' id='1582562324368'>
+2026-09-30 05:59:06 - sopra_clockin - INFO - Clock-in button clicked - expecting clock-out button to be enabled now
+2026-09-30 05:59:06 - sopra_clockin - INFO - Successfully clicked CLOCK_IN button
+2026-09-30 05:59:06 - sopra_clockin - INFO - Current time is 5:00 - outside clock-in/out windows
+2026-09-30 05:59:06 - sopra_clockin - INFO - Looking for CLOCK_IN button
+2026-09-30 05:59:06 - sopra_clockin - INFO - Button not found for CLOCK_IN
+2026-09-30 05:59:06 - sopra_clockin - INFO - Looking for CLOCK_IN button
+2026-09-30 05:59:06 - sopra_clockin - INFO - CLOCK_IN button HTML: <Mock name='mock.get_attribute()' id='1582562921168'>
+2026-09-30 05:59:06 - sopra_clockin - INFO - Clock-in button clicked - expecting clock-out button to be enabled now
+2026-09-30 05:59:06 - sopra_clockin - INFO - Successfully clicked CLOCK_IN button
+2026-09-30 05:59:06 - sopra_clockin - INFO - Looking for CLOCK_IN button
+2026-09-30 05:59:06 - sopra_clockin - WARNING - Clock-in button is disabled and clock-out is enabled; assuming clock-in at 08:00
+2026-09-30 05:59:06 - sopra_clockin - INFO - Looking for menu link: 'Registro de entrada / salida'
+2026-09-30 05:59:06 - sopra_clockin - INFO - Menu link HTML: <Mock name='mock.get_attribute()' id='1582562928224'>
+2026-09-30 05:59:06 - sopra_clockin - INFO - Looking for menu link: 'Registro de entrada / salida'
+2026-09-30 07:58:21 - __main__ - WARNING - Portal redirected to https://sprportal-mcp.soprahronline.com/SopraGP4U/; retrying direct clock page
+2026-09-30 07:58:27 - __main__ - INFO - [OK] Automation completed successfully
+2026-09-30 08:16:07 - __main__ - WARNING - Portal redirected to https://sprportal-mcp.soprahronline.com/SopraGP4U/; retrying direct clock page
+2026-09-30 08:16:11 - __main__ - INFO - [OK] Automation completed successfully
+2026-09-30 09:16:27 - __main__ - WARNING - Portal redirected to https://sprportal-mcp.soprahronline.com/SopraGP4U/; retrying direct clock page
+2026-09-30 09:16:32 - __main__ - INFO - [OK] Automation completed successfully
+2026-09-30 10:16:48 - __main__ - WARNING - Portal redirected to https://sprportal-mcp.soprahronline.com/SopraGP4U/; retrying direct clock page
+2026-09-30 10:16:52 - __main__ - INFO - [OK] Automation completed successfully
+2026-09-30 11:17:06 - __main__ - WARNING - Portal redirected to https://sprportal-mcp.soprahronline.com/SopraGP4U/; retrying direct clock page
+2026-09-30 11:17:10 - __main__ - INFO - [OK] Automation completed successfully
+2026-09-30 12:17:23 - __main__ - WARNING - Portal redirected to https://sprportal-mcp.soprahronline.com/SopraGP4U/; retrying direct clock page
+2026-09-30 12:17:27 - __main__ - INFO - [OK] Automation completed successfully
+2026-09-30 13:17:40 - __main__ - WARNING - Portal redirected to https://sprportal-mcp.soprahronline.com/SopraGP4U/; retrying direct clock page
+2026-09-30 13:17:44 - __main__ - INFO - [OK] Automation completed successfully
+2026-09-30 14:17:58 - __main__ - WARNING - Portal redirected to https://sprportal-mcp.soprahronline.com/SopraGP4U/; retrying direct clock page
+2026-09-30 14:18:02 - __main__ - INFO - [OK] Automation completed successfully
+2026-09-30 15:18:18 - __main__ - WARNING - Portal redirected to https://sprportal-mcp.soprahronline.com/SopraGP4U/; retrying direct clock page
+2026-09-30 15:18:22 - __main__ - INFO - [OK] Automation completed successfully
+2026-09-30 17:24:08 - __main__ - WARNING - Portal redirected to https://sprportal-mcp.soprahronline.com/SopraGP4U/; retrying direct clock page
+2026-09-30 17:24:12 - __main__ - INFO - [OK] Automation completed successfully
+2026-09-30 17:43:15 - __main__ - WARNING - Portal redirected to https://sprportal-mcp.soprahronline.com/SopraGP4U/; retrying direct clock page
+2026-09-30 17:43:21 - __main__ - INFO - [OK] Automation completed successfully

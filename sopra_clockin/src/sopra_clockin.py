@@ -437,12 +437,8 @@ class SopraClockInAutomation:
             logger.error(f"Login failed: {str(e)}", exc_info=True)
             return False
 
-    def _save_debug_snapshot(self, reason):
-        """Persist the current browser view for diagnosing selector failures."""
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        html_path = STATE_FILE.parent / f"debug_{timestamp}.html"
-        screenshot_path = STATE_FILE.parent / f"debug_{timestamp}.png"
-
+    def _log_browser_context(self, reason):
+        """Log browser context without writing page dumps or screenshots."""
         try:
             self.driver.switch_to.default_content()
             frame_count = len(self.driver.find_elements(By.CSS_SELECTOR, "iframe, frame"))
@@ -453,11 +449,8 @@ class SopraClockInAutomation:
                 self.driver.title,
                 frame_count,
             )
-            html_path.write_text(self.driver.page_source, encoding="utf-8")
-            self.driver.save_screenshot(str(screenshot_path))
-            logger.error("Saved debug HTML to %s and screenshot to %s", html_path, screenshot_path)
         except Exception as e:
-            logger.error("Could not save debug snapshot: %s", str(e))
+            logger.error("%s; could not read browser context: %s", reason, str(e), exc_info=True)
 
     def _find_element_in_frames(self, locator, depth=0, max_depth=6):
         """Find an element in the current document or recursively in frames."""
@@ -532,7 +525,11 @@ class SopraClockInAutomation:
         try:
             self.wait.until(portal_control_available)
         except Exception:
-            logger.warning("Portal loaded without the menu or clock control after %s seconds", WAIT_TIMEOUT)
+            logger.warning(
+                "Portal did not expose the menu or clock control after %s seconds",
+                WAIT_TIMEOUT,
+                exc_info=True,
+            )
 
         self.driver.switch_to.default_content()
         menu_link = self._find_element_in_frames(get_selector_tuple(MENU_LINK_SELECTOR))
@@ -547,7 +544,7 @@ class SopraClockInAutomation:
             logger.info("Menu link not found, but target clock control is already available")
             return True
 
-        self._save_debug_snapshot("Neither menu link nor target clock control was found")
+        self._log_browser_context("Neither menu link nor target clock control was found")
         return False
     
     def _try_alternative_menu_links(self):
@@ -584,7 +581,7 @@ class SopraClockInAutomation:
 
         if button is None:
             logger.info("Button not found for %s", self.action_type)
-            self._save_debug_snapshot(f"{self.action_type} button was not found")
+            self._log_browser_context(f"{self.action_type} button was not found")
             return False
 
         if self.action_type == 'CLOCK_IN' and not button.is_enabled():
@@ -696,7 +693,7 @@ class SopraClockInAutomation:
                 if attempt < MAX_RETRIES:
                     time.sleep(RETRY_DELAY)
                 else:
-                    logger.error("[KO] Automation failed after all retries: %s", str(e))
+                    logger.error("[KO] Automation failed after all retries: %s", str(e), exc_info=True)
                     return False
             
             finally:

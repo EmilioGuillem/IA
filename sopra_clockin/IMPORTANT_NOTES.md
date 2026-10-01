@@ -14,9 +14,10 @@
 - **PROTEGE** acceso a tu máquina
 
 ### Acceso a Task Scheduler
-- Programa debe ejecutarse con **privilegios de administrador**
-- Contraseña de usuario debe estar activa (no expirada)
-- Máquina debe estar **encendida** a las horas programadas
+- La tarea recomendada es `SopraGP4U Hourly Check`.
+- Usa `AtLogOn` y un respaldo diario a las 07:30.
+- No añadas repetición periódica en Task Scheduler: el runner comprueba cada 30 minutos.
+- Se ejecuta en la sesión del usuario y lanza Edge headless desde Python.
 
 ## ⚠️ LIMITACIONES
 
@@ -86,12 +87,10 @@ Si necesitas pausar la automatización:
 
 ```powershell
 # Deshabilitar tarea
-Disable-ScheduledTask -TaskName "SopraGP4U Clock In"
-Disable-ScheduledTask -TaskName "SopraGP4U Clock Out"
+Disable-ScheduledTask -TaskName "SopraGP4U Hourly Check"
 
 # Re-habilitar
-Enable-ScheduledTask -TaskName "SopraGP4U Clock In"
-Enable-ScheduledTask -TaskName "SopraGP4U Clock Out"
+Enable-ScheduledTask -TaskName "SopraGP4U Hourly Check"
 
 # Ver estado
 Get-ScheduledTask -TaskName "*SopraGP4U*"
@@ -103,7 +102,7 @@ Para monitorear si las tareas están ejecutándose:
 
 ```powershell
 # Ver historial de ejecuciones
-Get-ScheduledTaskInfo -TaskName "SopraGP4U Clock In"
+Get-ScheduledTaskInfo -TaskName "SopraGP4U Hourly Check"
 
 # Ver últimas líneas de log
 Get-Content logs/sopra_clockin.log -Tail 20

@@ -42,5 +42,5 @@ while ($true) {
         Write-RunnerLog "[KO] Hourly verification failed: $($_.Exception.Message)"
     }
 
-    Start-Sleep -Seconds 3600
+    Start-Sleep -Seconds 1800
 }

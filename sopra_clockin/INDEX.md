@@ -1,4 +1,10 @@
+<!-- AI_DISCLAIMER v1.0 -->
 # ÍNDICE Y ESTRUCTURA DEL PROYECTO
+
+> Este archivo ha sido creado total o parcialmente con la asistencia de herramientas de inteligencia artificial.
+> Todo el contenido ha sido generado bajo la supervisión directa de una persona identificada,
+> y bajo el marco de cumplimiento AI.Backbone Orchestrator.
+
 # SopraGP4U Clock In/Out Automation
 
 ## 📁 Estructura de Archivos
@@ -154,10 +160,10 @@ python src/inspect_portal_elements.py
 Get-ScheduledTask -TaskName *SopraGP4U*
 
 # Ejecutar tarea manualmente
-Start-ScheduledTask -TaskName "SopraGP4U Clock In"
+Start-ScheduledTask -TaskName "SopraGP4U Hourly Check"
 
 # Deshabilitar tarea
-Disable-ScheduledTask -TaskName "SopraGP4U Clock In"
+Disable-ScheduledTask -TaskName "SopraGP4U Hourly Check"
 
 # En Linux/Mac (si tienes WSL):
 bash setup.sh

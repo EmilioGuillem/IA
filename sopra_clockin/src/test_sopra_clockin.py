@@ -91,6 +91,8 @@ class TestActionDetermination(unittest.TestCase):
     def test_clock_in_before_threshold(self):
         """Test clock-in determination inside the preferred morning window."""
         automation = SopraClockInAutomation()
+        automation.state['clock_in_at'] = None
+        automation.state['clock_out_at'] = None
         automation.current_hour = 9
         automation.current_minute = 0
         self.assertEqual(automation._determine_action(), 'CLOCK_IN')
@@ -148,6 +150,8 @@ class TestActionDetermination(unittest.TestCase):
     def test_late_login_uses_nearest_available_check(self):
         """Test fallback clock-in after the preferred window is missed."""
         automation = SopraClockInAutomation()
+        automation.state['clock_in_at'] = None
+        automation.state['clock_out_at'] = None
         automation.current_weekday = 0
         automation.current_hour = 16
         automation.current_minute = 30
@@ -331,23 +335,25 @@ class TestButtonClicking(unittest.TestCase):
 
     def test_click_clock_button_returns_false_when_missing(self):
         self.automation._find_element_in_frames = Mock(return_value=None)
-        self.automation._save_debug_snapshot = Mock()
+        self.automation._log_browser_context = Mock()
 
         result = self.automation.click_clock_button()
 
         self.assertFalse(result)
-        self.automation._save_debug_snapshot.assert_called_once_with(
+        self.automation._log_browser_context.assert_called_once_with(
             'CLOCK_IN button was not found'
         )
 
     def test_menu_returns_false_when_menu_and_clock_control_missing(self):
         self.automation._find_element_in_frames = Mock(return_value=None)
-        self.automation._save_debug_snapshot = Mock()
+        self.automation._log_browser_context = Mock()
 
         result = self.automation.click_menu_link()
 
         self.assertFalse(result)
-        self.automation._save_debug_snapshot.assert_called_once()
+        self.automation._log_browser_context.assert_called_once_with(
+            'Neither menu link nor target clock control was found'
+        )
 
     def test_menu_clicks_when_found_in_frames(self):
         menu_link = Mock()

@@ -66,26 +66,10 @@ python src/sopra_clockin.py
 
 ## 3. Configurar Windows Task Scheduler
 
-### Opción A: Via GUI (Fácil)
-
-1. Abre **Programador de tareas** (Windows + R → `taskschd.msc`)
-
-2. Click derecho → "Crear tarea"
-
-3. **General**:
-   - Nombre: `SopraGP4U Clock In`
-   - ✓ Ejecutar con privilegios máximos
-
-4. **Desencadenadores** → Nueva entrada:
-   - Tipo: Diariamente
-   - Hora: 08:00 (para CLOCK-IN)
-   - Aceptar
-
-5. **Acciones** → Nueva entrada:
-   - Programa: `C:\Users\eguillemsimon\Documents\IA\IA\sopra_clockin\scheduled_clockin.bat`
-   - Aceptar
-
-6. La tarea recomendada se ejecuta al iniciar sesión y repite la comprobación cada hora.
+La tarea no necesita una repetición periódica en Task Scheduler. Usa el setup de
+PowerShell para registrar `AtLogOn` y el respaldo diario de las 07:30; el runner
+interno mantiene las comprobaciones cada 30 minutos. El runner inicia Edge en
+modo headless, por lo que no depende de que se abra manualmente Edge.
 
 ### Opción B: Via PowerShell (Automático)
 
@@ -96,9 +80,11 @@ cd "c:\Users\eguillemsimon\Documents\IA\IA\sopra_clockin"
 .\setup.ps1 -CreateScheduledTasks
 ```
 
-Esto crea `SopraGP4U Hourly Check`, elimina las tareas antiguas de 08:00 y
-17:15, y ejecuta el control inmediatamente al iniciar sesión y después cada 60
-minutos. La lógica decide si corresponde entrada, salida o ninguna acción:
+Esto crea o reemplaza `SopraGP4U Hourly Check` con dos desencadenadores: al
+iniciar sesión y diariamente a las 07:30 como respaldo. Al reemplazar la tarea,
+se eliminan sus desencadenadores anteriores. Si ya está activa, `IgnoreNew`
+evita una segunda instancia. El runner comprueba cada 30 minutos. La lógica decide si
+corresponde entrada, salida o ninguna acción:
 entrada entre 08:00 y 09:30, entrada tardía en la primera comprobación posterior,
 y salida desde 17:30 solo tras superar 9 horas desde la entrada. La tarea usa
 `SOPRA_DRY_RUN=false` para realizar acciones reales; valida primero los
