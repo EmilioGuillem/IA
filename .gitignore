@@ -18,3 +18,6 @@ outputs/runs/_interactive/
 .apm-install-tmp-*/
 .apm-bootstrap-tmp/
 # --- end APM runtime artifacts ---
+
+# APM installer staging
+/.apm-dist/
